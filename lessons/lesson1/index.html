@@ -12,13 +12,22 @@
 
 body {
   font-family: Arial, sans-serif;
+  font-size: clamp(16px, 2.5vw, 20px);
   padding: 10px;
   text-align: center;
   background-color: #fff;
   color: #023d8ada;
-  max-width: 1200px;
-  margin: auto;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
 }
+
+@media (min-width: 768px) {
+  body {
+    max-width: 1200px;
+  }
+}
+
 
 h1, h2 {
   font-size: 2rem;
