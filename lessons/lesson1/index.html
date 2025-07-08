@@ -70,11 +70,9 @@ audio {
 .letter {
   border: 2px solid orange;
   padding: 2px;
-  .letter {
   width: 60px;
   height: 60px;
   font-size: 24px;
-}
   line-height: 60px;
   text-align: center;
   cursor: pointer;
@@ -83,6 +81,7 @@ audio {
   transition: background-color 0.2s, transform 0.2s;
   border-radius: 8px;
 }
+
 
 .letter:hover {
   background-color: #e0f0ff;
@@ -276,6 +275,35 @@ audio {
   display: block;
   margin: 0 auto; /* по центру */
 }
+    @media (max-width: 600px) {
+  body {
+    font-size: 1.1rem;
+  }
+
+  .letter {
+    width: 22vw;
+    height: 22vw;
+    font-size: 6vw;
+    line-height: 22vw;
+    padding: 4px;
+  }
+
+  .check-button {
+    font-size: 1.1rem;
+    padding: 1rem;
+    max-width: 90%;
+  }
+
+  audio {
+    max-width: 100%;
+  }
+
+  .pdf-wrapper iframe {
+    width: 100%;
+    height: auto;
+  }
+}
+
   </style>
 </head>
 <body>
