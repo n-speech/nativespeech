@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Кабинет</title>
+  <meta charset="UTF-8" />
+  <title>Личный кабинет</title>
 </head>
 <body>
   <h1>Добро пожаловать, <%= user.email %>!</h1>
+  <p><a href="/logout">Выйти</a></p>
   <h2>Доступные уроки:</h2>
   <ul>
     <% lessons.forEach(lesson => { %>
