@@ -2,8 +2,8 @@
   "users": [
     {
       "email": "student@example.com",
-      "password": "$2b$10$L0z7f6YDZ0nPP9H6CGkU2OqsuP1B/5A/26lj8C7k3CmzqCyBSgHXW",
-      "access": ["lesson1"]
+  "password": "$2b$12$XetDeBOUpYYDtjLGZVgw3euC6qlJnO0pvqmQHeIhPJbBx1PYirb/u",
+  "access": ["lesson1"]
     }
   ],
   "lessons": [
