@@ -12,6 +12,10 @@ const db = require("./database.json");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+// Доступ к аудиофайлам в lessons/audioL1
+app.use("/audioL1", express.static(path.join(__dirname, "lessons/audioL1")));
+
 app.use(session({
   secret: "secret123",
   resave: false,
