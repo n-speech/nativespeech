@@ -47,10 +47,9 @@ p {
 
 /* Аудио */
 audio {
-   width: 100%;
-  max-width: 100%;
   margin: 0 auto;
-  display: block;
+  width: 100%;
+  max-width: 300px;
 }
 
 /* Заголовки */
@@ -71,10 +70,12 @@ audio {
 .letter {
   border: 2px solid orange;
   padding: 2px;
-  width: clamp(60px, 20vw, 80px);
-  height: clamp(60px, 20vw, 80px);
-  font-size: clamp(20px, 5vw, 32px);
-  line-height: 45px;
+  .letter {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+}
+  line-height: 60px;
   text-align: center;
   cursor: pointer;
   user-select: none;
@@ -106,8 +107,7 @@ audio {
 /* Кнопка */
 .check-button {
   width: 100%;
-  padding: 1rem;
-  font-size: clamp(1rem, 4vw, 1.2rem);
+  max-width: 300px;
   border: none;
   border-radius: 6px;
   background-color: #0077cc;
