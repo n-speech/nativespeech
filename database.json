@@ -1,0 +1,16 @@
+{
+  "users": [
+    {
+      "email": "student@example.com",
+      "password": "1234",
+      "access": ["lesson1"]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "lesson1",
+      "title": "Урок 1: Приветствие",
+      "file": "lesson1.html"
+    }
+  ]
+}
