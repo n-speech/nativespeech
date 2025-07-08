@@ -12,6 +12,8 @@ const db = require("./database.json");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use("/lessons", express.static(path.join(__dirname, "lessons")));
+
 
 // Доступ к аудиофайлам в lessons/audioL1
 app.use("/audioL1", express.static(path.join(__dirname, "lessons/audioL1")));
@@ -66,5 +68,6 @@ app.get("/lesson/:id", checkAuth, (req, res) => {
     res.render("lesson", { lesson, htmlContent });
   });
 });
+
 
 app.listen(PORT, () => console.log("Server started on port", PORT));
