@@ -11,6 +11,7 @@ const db = require("./database.json");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use("/lessons", express.static(path.join(__dirname, "lessons"))); // 🔥 добавлено
 app.use(session({
   secret: "secret123",
   resave: false,
