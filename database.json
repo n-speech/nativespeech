@@ -6,11 +6,13 @@
   "access": ["lesson1"]
     }
   ],
+  
   "lessons": [
-    {
-      "id": "lesson1",
-      "title": "Урок 1: Приветствие",
-      "file": "lesson1.html"
-    }
+   {
+  "id": "lesson1",
+  "title": "Урок 1. Алфавит: A–F",
+  "file": "lesson1/index.html"
+}
+
   ]
 }
