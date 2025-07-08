@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const session = require("express-session");
+const bcrypt = require("bcrypt");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -11,7 +12,6 @@ const db = require("./database.json");
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-app.use("/lessons", express.static(path.join(__dirname, "lessons"))); // 🔥 добавлено
 app.use(session({
   secret: "secret123",
   resave: false,
@@ -31,10 +31,14 @@ app.get("/login", (req, res) => {
   res.render("login", { error: null });
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = db.users.find(u => u.email === email && u.password === password);
-  if (user) {
+  const user = db.users.find(u => u.email === email);
+  if (!user) {
+    return res.render("login", { error: "Неверный логин или пароль" });
+  }
+  const match = await bcrypt.compare(password, user.password);
+  if (match) {
     req.session.user = user;
     res.redirect("/dashboard");
   } else {
@@ -51,7 +55,12 @@ app.get("/lesson/:id", checkAuth, (req, res) => {
   const { id } = req.params;
   const lesson = db.lessons.find(l => l.id === id);
   if (!lesson || !req.session.user.access.includes(id)) return res.sendStatus(403);
-  res.render("lesson", { lesson });
+
+  const filePath = path.join(__dirname, "lessons", lesson.file);
+  fs.readFile(filePath, "utf-8", (err, htmlContent) => {
+    if (err) return res.sendStatus(500);
+    res.render("lesson", { lesson, htmlContent });
+  });
 });
 
 app.listen(PORT, () => console.log("Server started on port", PORT));
