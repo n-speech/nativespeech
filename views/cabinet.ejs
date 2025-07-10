@@ -64,30 +64,35 @@
       margin-bottom: 1.5rem;
     }
 
-    .buttons {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      width: 100%;
-    }
+   .buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
 
-    .buttons button,
-    .buttons form button {
-      flex: 1;
-      display: block;
-      width: 100%;
-      background-color: #FFD966;
-      color: #241c15;
-      border: none;
-      border-radius: 0.3125rem;
-      padding: 0.75rem 1.25rem;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-sizing: border-box;
-      text-align: center;
-      text-decoration: none;
-    }
+.buttons button,
+.buttons form {
+  flex: 1;
+}
+
+.buttons button,
+.buttons form button {
+  width: 100%;
+  background-color: #FFD966;
+  color: #241c15;
+  border: none;
+  border-radius: 0.3125rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+}
+
 
     #lessons {
       display: none;
