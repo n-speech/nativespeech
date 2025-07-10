@@ -1,4 +1,3 @@
-<!-- views/cabinet.ejs -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -64,34 +63,76 @@
       color: #241c15;
       margin-bottom: 1.5rem;
     }
+
     .buttons {
-  display: block;
-  text-align: center;
-  width: 100%;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      width: 100%;
+    }
 
-.buttons button,
-.buttons form {
-  flex: 1;
-  display: flex;
-}
+    .buttons button,
+    .buttons form button {
+      flex: 1;
+      display: block;
+      width: 100%;
+      background-color: #FFD966;
+      color: #241c15;
+      border: none;
+      border-radius: 0.3125rem;
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-sizing: border-box;
+      text-align: center;
+      text-decoration: none;
+    }
 
-.buttons button,
-.buttons form button {
-  text-align: center;
-  width: 100%;
-  background-color: #FFD966;
-  color: #241c15;
-  border: none;
-  border-radius: 0.3125rem;
-  padding: 0.75rem 1.25rem;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  box-sizing: border-box;
-}
+    #lessons {
+      display: none;
+      margin-top: 2.5rem;
+      min-height: 10rem;
+    }
+
+    #lessons.active {
+      display: block;
+    }
+
+    #lessons-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .lesson-card {
+      background: #FFFBE8;
+      border: 2px solid #F4EDDD;
+      border-radius: 0.5rem;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 7.5rem;
+    }
+
+    .lesson-title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #241c15;
+      margin-bottom: 0.25rem;
+    }
+
+    .lesson-grade {
+      font-style: italic;
+      color: #4e9c5d;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .lesson-bottom {
+      margin-top: auto;
+    }
 
     .btn-lesson {
       display: block;
@@ -107,64 +148,18 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
       box-sizing: border-box;
-      
       text-align: center;
     }
+
     .btn-lesson.disabled {
       background-color: #f3f7a3;
       cursor: not-allowed;
       opacity: 0.6;
     }
 
-   #lessons {
-  display: none;
-  margin-top: 2.5rem;
-  min-height: 10rem;
-}
-
-
-    #lessons.active {
-      display: block;
-    }
-
-   #lessons-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-    .lesson-card {
-      background: #FFFBE8;
-      border: 2px solid #F4EDDD;
-      border-radius: 0.5rem;
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      min-height: 7.5rem;
-    }
-    .lesson-title {
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: #241c15;
-      margin-bottom: 0.25rem;
-    }
-    .lesson-grade {
-      font-style: italic;
-      color: #4e9c5d;
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-    }
-    .lesson-bottom {
-      margin-top: auto;
-    }
-
     @media (max-width: 900px) {
       .dashboard {
         padding: 1.5rem;
-      }
-      .btn-lesson {
-        width: 50%;
       }
       .lesson-title {
         font-size: 1.125rem;
@@ -173,6 +168,7 @@
         font-size: 1.25rem;
       }
     }
+
     @media (max-width: 600px) {
       body {
         padding: 2rem 1rem;
@@ -183,13 +179,8 @@
         box-shadow: none;
       }
       .buttons {
-        flex-direction: column-reverse;
+        flex-direction: column;
         gap: 0.75rem;
-      }
-      .buttons button {
-        width: 100%;
-        font-size: 1rem;
-        padding: 0.75rem;
       }
       .lesson-card {
         padding: 1rem;
@@ -213,12 +204,11 @@
     <div id="progressPercent"><%= progress %>% завершено</div>
 
     <div class="buttons">
-  <button id="btnToggleLessons">Показать уроки</button>
-  <form action="/logout" method="get">
-    <button type="submit">Выйти</button>
-  </form>
-</div>
-
+      <button id="btnToggleLessons">Показать уроки</button>
+      <form action="/logout" method="get">
+        <button type="submit">Выйти</button>
+      </form>
+    </div>
 
     <div id="lessons">
       <div id="lessons-list">
