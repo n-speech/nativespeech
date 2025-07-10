@@ -69,12 +69,11 @@
       gap: 1rem;
       margin-bottom: 2rem;
     }
-    .buttons a {
+    .buttons button {
       flex: 1;
       background-color: #FFD966;
       color: #241c15;
-      text-align: center;
-      text-decoration: none;
+      border: none;
       border-radius: 0.3125rem;
       padding: 0.75rem 1.25rem;
       font-weight: 700;
@@ -101,6 +100,16 @@
       cursor: not-allowed;
       opacity: 0.6;
     }
+
+    #lessons {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    #lessons.active {
+      display: block;
+    }
+
     #lessons-list {
       display: flex;
       flex-direction: column;
@@ -131,7 +140,7 @@
       margin-top: auto;
     }
 
-@media (max-width: 900px) {
+    @media (max-width: 900px) {
       .dashboard {
         padding: 1.5rem;
       }
@@ -186,24 +195,40 @@
 
     <div class="buttons">
       <button id="btnToggleLessons">Показать уроки</button>
-     <button id="btnLogout">Выйти</button>
+      <form action="/logout" method="get" style="flex: 1; margin: 0;">
+        <button type="submit">Выйти</button>
+      </form>
     </div>
 
-    <div id="lessons-list">
-      <% lessons.forEach(lesson => { %>
-        <div class="lesson-card">
-          <div class="lesson-title"><%= lesson.title %></div>
-          <div class="lesson-grade">Оценка: <%= lesson.grade || '—' %></div>
-          <div class="lesson-bottom">
-            <% if (lesson.access) { %>
-              <a class="btn-lesson" href="/protected-lesson/<%= lesson.id %>">Перейти к уроку</a>
-            <% } else { %>
-              <div class="btn-lesson disabled">🔒 Недоступен</div>
-            <% } %>
+    <div id="lessons">
+      <div id="lessons-list">
+        <% lessons.forEach(lesson => { %>
+          <div class="lesson-card">
+            <div class="lesson-title"><%= lesson.title %></div>
+            <div class="lesson-grade">Оценка: <%= lesson.grade || '—' %></div>
+            <div class="lesson-bottom">
+              <% if (lesson.access) { %>
+                <a class="btn-lesson" href="/protected-lesson/<%= lesson.id %>">Перейти к уроку</a>
+              <% } else { %>
+                <div class="btn-lesson disabled">🔒 Недоступен</div>
+              <% } %>
+            </div>
           </div>
-        </div>
-      <% }) %>
+        <% }) %>
+      </div>
     </div>
   </div>
+
+  <script>
+    const btnToggleLessons = document.getElementById('btnToggleLessons');
+    const lessonsBlock = document.getElementById('lessons');
+
+    btnToggleLessons.addEventListener('click', () => {
+      lessonsBlock.classList.toggle('active');
+      btnToggleLessons.textContent = lessonsBlock.classList.contains('active')
+        ? 'Скрыть уроки'
+        : 'Показать уроки';
+    });
+  </script>
 </body>
 </html>
