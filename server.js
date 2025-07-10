@@ -45,7 +45,13 @@ app.post('/login', async (req, res) => {
   if (user) {
     const match = await bcrypt.compare(password, user.password);
     if (match) {
-      req.session.user = { email: user.email, access: user.access };
+      req.session.user = {
+  email: user.email,
+  access: user.access,
+  grades: user.grades || {},
+  name: user.name || ''
+};
+
       return res.redirect('/cabinet');
     }
   }
@@ -60,10 +66,34 @@ app.get('/logout', (req, res) => {
 // ===== 👤 Кабинет =====
 
 app.get('/cabinet', requireLogin, (req, res) => {
-  const userAccess = req.session.user.access || [];
-  const availableLessons = lessons.filter(lesson => userAccess.includes(lesson.id));
-  res.render('cabinet', { user: req.session.user, lessons: availableLessons });
+  const user = req.session.user;
+
+  // 1. Вычислить список доступных уроков
+  const userAccess = user.access || [];
+  const availableLessons = lessons.map(lesson => {
+    return {
+      ...lesson,
+      access: userAccess.includes(lesson.id),
+      grade: user.grades?.[lesson.id] || null
+    };
+  });
+
+  // 2. Название курса (можно пока задать вручную или взять из базы)
+  const courseName = "Французский для начинающих";
+
+  // 3. Подсчёт прогресса (по наличию оценок)
+  const total = availableLessons.length;
+  const completed = availableLessons.filter(l => l.grade).length;
+  const progress = total ? Math.round((completed / total) * 100) : 0;
+
+  res.render('cabinet', {
+    user,
+    lessons: availableLessons,
+    courseName,
+    progress
+  });
 });
+
 
 // ===== 📖 Урок =====
 
