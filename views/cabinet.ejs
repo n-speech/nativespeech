@@ -65,22 +65,32 @@
       margin-bottom: 1.5rem;
     }
     .buttons {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .buttons button {
-      flex: 1;
-      background-color: #FFD966;
-      color: #241c15;
-      border: none;
-      border-radius: 0.3125rem;
-      padding: 0.75rem 1.25rem;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-sizing: border-box;
-    }
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.buttons button,
+.buttons form {
+  flex: 1;
+  display: flex;
+}
+
+.buttons button,
+.buttons form button {
+  width: 100%;
+  background-color: #FFD966;
+  color: #241c15;
+  border: none;
+  border-radius: 0.3125rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
     .btn-lesson {
       background-color: #FFD966;
       color: #241c15;
@@ -101,10 +111,12 @@
       opacity: 0.6;
     }
 
-    #lessons {
-      display: none;
-      margin-top: 2rem;
-    }
+   #lessons {
+  display: none;
+  margin-top: 2.5rem;
+  min-height: 10rem;
+}
+
 
     #lessons.active {
       display: block;
@@ -194,11 +206,12 @@
     <div id="progressPercent"><%= progress %>% завершено</div>
 
     <div class="buttons">
-      <button id="btnToggleLessons">Показать уроки</button>
-      <form action="/logout" method="get" style="flex: 1; margin: 0;">
-        <button type="submit">Выйти</button>
-      </form>
-    </div>
+  <button id="btnToggleLessons">Показать уроки</button>
+  <form action="/logout" method="get">
+    <button type="submit">Выйти</button>
+  </form>
+</div>
+
 
     <div id="lessons">
       <div id="lessons-list">
