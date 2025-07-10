@@ -130,6 +130,47 @@
     .lesson-bottom {
       margin-top: auto;
     }
+
+@media (max-width: 900px) {
+      .dashboard {
+        padding: 1.5rem;
+      }
+      .btn-lesson {
+        width: 50%;
+      }
+      .lesson-title {
+        font-size: 1.125rem;
+      }
+      #welcome, #courseName {
+        font-size: 1.25rem;
+      }
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 2rem 1rem;
+      }
+      .dashboard {
+        padding: 1.5rem 1rem;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .buttons {
+        flex-direction: column-reverse;
+        gap: 0.75rem;
+      }
+      .buttons button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.75rem;
+      }
+      .lesson-card {
+        padding: 1rem;
+        min-height: auto;
+      }
+      .lesson-title, .lesson-grade {
+        font-size: 1.1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -144,7 +185,8 @@
     <div id="progressPercent"><%= progress %>% завершено</div>
 
     <div class="buttons">
-      <a href="/logout">Выйти</a>
+      <button id="btnToggleLessons">Показать уроки</button>
+     <button id="btnLogout">Выйти</button>
     </div>
 
     <div id="lessons-list">
