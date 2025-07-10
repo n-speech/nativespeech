@@ -65,23 +65,30 @@ app.get('/logout', (req, res) => {
 
 // ===== 👤 Кабинет =====
 
-app.get('/cabinet', requireLogin, (req, res) => {
+app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
+  const courseId = user.courseId;
 
-  // 1. Вычислить список доступных уроков
-  const userAccess = user.access || [];
-  const availableLessons = lessons.map(lesson => {
-    return {
-      ...lesson,
-      access: userAccess.includes(lesson.id),
-      grade: user.grades?.[lesson.id] || null
-    };
-  });
+  // Уроки
+  const { data: lessonsData, error: lessonsError } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('order_number');
 
-  // 2. Название курса (можно пока задать вручную или взять из базы)
-  const courseName = "Французский для начинающих";
+  // Название курса
+  const { data: courseData } = await supabase
+    .from('courses')
+    .select('title')
+    .eq('id', courseId)
+    .single();
 
-  // 3. Подсчёт прогресса (по наличию оценок)
+  const availableLessons = lessonsData.map(lesson => ({
+    ...lesson,
+    access: user.access.includes(lesson.id),
+    grade: user.grades[lesson.id] || null
+  }));
+
   const total = availableLessons.length;
   const completed = availableLessons.filter(l => l.grade).length;
   const progress = total ? Math.round((completed / total) * 100) : 0;
@@ -89,7 +96,7 @@ app.get('/cabinet', requireLogin, (req, res) => {
   res.render('cabinet', {
     user,
     lessons: availableLessons,
-    courseName,
+    courseName: courseData?.title || 'Ваш курс',
     progress
   });
 });
