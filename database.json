@@ -2,7 +2,7 @@
   "users": [
   {
     "email": "dafna5566@gmail.com",
-    "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
+    "password": "$2b$12$8YoKgdyvMtI3CJnUOSW34OMlvEpTCBASqHhZWc.x3vzoX62RT1riC",
     "name": "Анна",
     "access": ["lesson1"],
     "course_id": "course1"
