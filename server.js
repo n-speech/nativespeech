@@ -70,8 +70,6 @@ app.get('/cabinet', requireLogin, (req, res) => {
 
   if (!course_id) return res.send('❗ У вас не задан курс');
 
-  // Получаем название курса из локальной базы lessons (или можно добавить courses в database.json)
-  // Пока просто выводим название "Ваш курс"
   const courseName = 'Ваш курс';
 
   const availableLessons = lessons
@@ -94,40 +92,26 @@ app.get('/cabinet', requireLogin, (req, res) => {
   });
 });
 
-// === 📖 Отображение содержимого урока (описание, без HTML-файлов) ===
+// === 📖 Отдача HTML-файла урока из папки lessons/lessonId/index.html ===
 
 app.get('/lesson/:id', requireLogin, (req, res) => {
   const lessonId = req.params.id;
+
   if (!req.session.user.access.includes(lessonId)) {
     return res.status(403).send('⛔ У вас нет доступа к этому уроку');
   }
 
-  const lesson = lessons.find(l => l.id === lessonId);
-  if (!lesson) return res.status(404).send('Урок не найден');
-
-  res.render('lesson', { lesson });
-});
-
-// === 📦 Отдача защищённых HTML-файлов урока ===
-
-app.get('/protected-lesson/:lessonId', requireLogin, (req, res) => {
-  const lessonId = req.params.lessonId;
-  if (!req.session.user.access.includes(lessonId)) {
-    return res.status(403).send('⛔ Нет доступа');
+  const filePath = path.join(__dirname, 'lessons', lessonId, 'index.html');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('Урок не найден');
   }
 
-  const filePath = path.join(__dirname, 'lessons', lessonId, 'index.html');
-  if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Урок не найден');
-
-  let html = fs.readFileSync(filePath, 'utf8');
-  html = html.replace(/href="style.css"/g, `href="/protected-lesson/${lessonId}/style.css"`);
-  html = html.replace(/src="script.js"/g, `src="/protected-lesson/${lessonId}/script.js"`);
-  html = html.replace(/src="audioL1\//g, `src="/protected-lesson/${lessonId}/audioL1/`);
-
-  res.send(html);
+  res.sendFile(filePath);
 });
 
-app.get('/protected-lesson/:lessonId/*', requireLogin, (req, res) => {
+// === Отдача вспомогательных файлов урока (css, js, аудио) ===
+
+app.get('/lesson/:lessonId/*', requireLogin, (req, res) => {
   const lessonId = req.params.lessonId;
   const filePath = path.join(__dirname, 'lessons', lessonId, req.params[0]);
 
