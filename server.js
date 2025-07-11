@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -7,9 +5,9 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
-// Загружаем локальную базу (users и уроки)
+// Загружаем базу
 const database = JSON.parse(fs.readFileSync('./database.json', 'utf8'));
 const users = database.users;
 const lessons = database.lessons;
@@ -17,122 +15,100 @@ const lessons = database.lessons;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use(express.urlencoded({ extended: true }));
+
 app.use(session({
-  secret: 'мой_секрет',
+  secret: 'секрет_сессии',
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false }
 }));
-
-app.use(express.urlencoded({ extended: true }));
-
-// === 🔐 Авторизация Log in ===
 
 function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   next();
 }
 
+// Страница логина
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
+// Обработка логина
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   const user = users.find(u => u.email === email);
+  if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
-  if (user) {
-    const match = await bcrypt.compare(password, user.password);
-    if (match) {
-      req.session.user = {
-        email: user.email,
-        name: user.name || '',
-        access: user.access || [],
-        grades: user.grades || {},
-        course_id: user.course_id || null
-      };
-      return res.redirect('/cabinet');
-    }
-  }
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.render('login', { error: 'Неверный пароль' });
 
-  res.render('login', { error: 'Неверный email или пароль' });
+  // Сохраняем в сессию
+  req.session.user = {
+    email: user.email,
+    access: user.access
+  };
+
+  res.redirect('/cabinet');
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/login'));
-});
-
-// === 👤 Кабинет ===
-
+// Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
-  const course_id = user.course_id;
 
-  if (!course_id) return res.send('❗ У вас не задан курс');
+  // Получаем уроки, к которым есть доступ
+  const availableLessons = lessons.filter(lesson => user.access.includes(lesson.id));
 
-  const courseName = 'Ваш курс';
-
-  const availableLessons = lessons
-    .filter(lesson => lesson.course_id === course_id)
-    .map(lesson => ({
-      ...lesson,
-      access: user.access.includes(lesson.id),
-      grade: user.grades[lesson.id] || null
-    }));
-
-  const total = availableLessons.length;
-  const completed = availableLessons.filter(l => l.grade).length;
-  const progress = total ? Math.round((completed / total) * 100) : 0;
-
-  res.render('cabinet', {
-    user,
-    lessons: availableLessons,
-    courseName,
-    progress
-  });
+  res.render('cabinet', { user, lessons: availableLessons });
 });
 
-// === 📖 Отдача HTML-файла урока из папки lessons/lessonId/index.html ===
-
+// Отдача урока
 app.get('/lesson/:id', requireLogin, (req, res) => {
   const lessonId = req.params.id;
+  const user = req.session.user;
 
-  if (!req.session.user.access.includes(lessonId)) {
+  if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ У вас нет доступа к этому уроку');
   }
 
-  const filePath = path.join(__dirname, 'lessons', lessonId, 'index.html');
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Урок не найден');
-  }
+  const lesson = lessons.find(l => l.id === lessonId);
+  if (!lesson) return res.status(404).send('Урок не найден');
 
+  const filePath = path.join(__dirname, 'lessons', lesson.file);
   res.sendFile(filePath);
 });
 
-// === Отдача вспомогательных файлов урока (css, js, аудио) ===
+// Отдача статичных файлов урока (css, js, audio)
+app.get('/lesson/:id/*', requireLogin, (req, res) => {
+  const lessonId = req.params.id;
+  const fileRelative = req.params[0];
+  const user = req.session.user;
 
-app.get('/lesson/:lessonId/*', requireLogin, (req, res) => {
-  const lessonId = req.params.lessonId;
-  const filePath = path.join(__dirname, 'lessons', lessonId, req.params[0]);
-
-  if (!req.session.user.access.includes(lessonId)) {
+  if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ Нет доступа к файлу');
   }
 
+  const filePath = path.join(__dirname, 'lessons', lessonId, fileRelative);
   if (!fs.existsSync(filePath)) {
-    return res.status(404).send('⛔ Файл не найден');
+    return res.status(404).send('Файл не найден');
   }
 
   res.sendFile(filePath);
 });
 
-// === Главная ===
+// Выход
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+});
 
+// Главная
 app.get('/', (req, res) => {
   if (req.session.user) return res.redirect('/cabinet');
   res.redirect('/login');
 });
 
 app.listen(port, () => {
-  console.log(`✅ Сервер запущен на http://localhost:${port}`);
+  console.log(`Сервер запущен http://localhost:${port}`);
 });
