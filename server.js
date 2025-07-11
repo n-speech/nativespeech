@@ -5,9 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
-const { createClient } = require('@supabase/supabase-js');
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -67,17 +64,15 @@ app.get('/logout', (req, res) => {
 
 // === 👤 Кабинет ===
 
-app.get('/cabinet', requireLogin, async (req, res) => {
+app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
   const course_id = user.course_id;
 
   if (!course_id) return res.send('❗ У вас не задан курс');
 
-  const { data: courseData } = await supabase
-    .from('courses')
-    .select('title')
-    .eq('id', course_id)
-    .single();
+  // Получаем название курса из локальной базы lessons (или можно добавить courses в database.json)
+  // Пока просто выводим название "Ваш курс"
+  const courseName = 'Ваш курс';
 
   const availableLessons = lessons
     .filter(lesson => lesson.course_id === course_id)
@@ -94,7 +89,7 @@ app.get('/cabinet', requireLogin, async (req, res) => {
   res.render('cabinet', {
     user,
     lessons: availableLessons,
-    courseName: courseData?.title || 'Ваш курс',
+    courseName,
     progress
   });
 });
