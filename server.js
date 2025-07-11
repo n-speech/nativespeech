@@ -40,6 +40,10 @@ app.post('/login', async (req, res) => {
   const user = users.find(u => u.email === email);
   if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
+console.log('Введённый пароль:', password);
+console.log('Хэш из базы:', user.password);
+
+  
   const match = await bcrypt.compare(password, user.password); // здесь сравнение с хэшем
   if (!match) return res.render('login', { error: 'Неверный пароль' });
 
