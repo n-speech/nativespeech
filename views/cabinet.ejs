@@ -230,7 +230,7 @@
             <div class="lesson-grade">Оценка: <%= lesson.grade || '—' %></div>
             <div class="lesson-bottom">
               <% if (lesson.access) { %>
-                <a class="btn-lesson" href="/protected-lesson/<%= lesson.id %>">Перейти к уроку</a>
+                <a class="btn-lesson" href="/lesson/<%= lesson.id %>">Перейти к уроку</a>
               <% } else { %>
                 <div class="btn-lesson disabled">🔒 Недоступен</div>
               <% } %>
