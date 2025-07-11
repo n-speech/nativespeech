@@ -2,7 +2,7 @@
   "users": [
     {
       "email": "student@example.com",
-      "password": "$2b$12$XetDeBOUpYYDtjLGZVgw3euC6qlJnO0pvqmQHeIhPJbBx1PYirb/u",
+      "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
       "name": "Анна",
       "access": ["lesson1"]
     }
