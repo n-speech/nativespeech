@@ -29,7 +29,7 @@ app.use(session({
 
 app.use(express.urlencoded({ extended: true }));
 
-// === 🔐 Авторизация ===
+// === 🔐 Авторизация Log in ===
 
 function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
@@ -52,7 +52,7 @@ app.post('/login', async (req, res) => {
         name: user.name || '',
         access: user.access || [],
         grades: user.grades || {},
-        courseId: user.courseId || null
+        course_id: user.course_id || null
       };
       return res.redirect('/cabinet');
     }
@@ -69,18 +69,18 @@ app.get('/logout', (req, res) => {
 
 app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
-  const courseId = user.courseId;
+  const course_id = user.course_id;
 
-  if (!courseId) return res.send('❗ У вас не задан курс');
+  if (!course_id) return res.send('❗ У вас не задан курс');
 
   const { data: courseData } = await supabase
     .from('courses')
     .select('title')
-    .eq('id', courseId)
+    .eq('id', course_id)
     .single();
 
   const availableLessons = lessons
-    .filter(lesson => lesson.courseId === courseId)
+    .filter(lesson => lesson.course_id === course_id)
     .map(lesson => ({
       ...lesson,
       access: user.access.includes(lesson.id),
