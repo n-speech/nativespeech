@@ -53,14 +53,30 @@ app.post('/login', async (req, res) => {
 });
 
 // Кабинет
+// Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
 
-  // Получаем уроки, к которым есть доступ
-  const availableLessons = lessons.filter(lesson => user.access.includes(lesson.id));
+  const availableLessons = lessons.map(lesson => ({
+    ...lesson,
+    access: user.access.includes(lesson.id),
+    grade: lesson.grade || null // Можно заменить на оценку из базы при необходимости
+  }));
 
-  res.render('cabinet', { user, lessons: availableLessons });
+  const total = availableLessons.length;
+  const completed = availableLessons.filter(l => l.grade).length;
+  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const courseName = 'Ваш курс'; // Здесь можно вставить из базы по course_id, если она есть
+
+  res.render('cabinet', {
+    user,
+    lessons: availableLessons,
+    courseName,
+    progress
+  });
 });
+
 
 // Отдача урока
 app.get('/lesson/:id', requireLogin, (req, res) => {
