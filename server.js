@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
 const session = require('express-session');
 
 const app = express();
@@ -29,107 +28,93 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// Страница логина
+// 🔐 Страница логина
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// Обработка логина
-app.post('/login', async (req, res) => {
+// 🔐 Обработка логина (временно без bcrypt)
+app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = users.find(u => u.email === email);
   if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
-// Временно вместо bcrypt.compare
-if (password !== '12345') {
-  return res.render('login', { error: 'Неверный пароль' });
-}
+  // Временно: проверка обычного пароля
+  if (password !== '12345') {
+    return res.render('login', { error: 'Неверный пароль' });
+  }
 
-
-
-  // Сохраняем в сессию
   req.session.user = {
-   email: user.email,
-  name: user.name || '',
-  access: user.access || []
+    email: user.email,
+    name: user.name || '',
+    access: user.access || []
   };
 
   res.redirect('/cabinet');
 });
 
-// Кабинет
-// Кабинет
+// 👤 Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
 
   const availableLessons = lessons.map(lesson => ({
     ...lesson,
     access: user.access.includes(lesson.id),
-    grade: lesson.grade || null // Можно заменить на оценку из базы при необходимости
+    grade: lesson.grade || null
   }));
 
   const total = availableLessons.length;
   const completed = availableLessons.filter(l => l.grade).length;
-  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const progress = total ? Math.round((completed / total) * 100) : 0;
+  const courseName = 'Ваш курс';
 
-  const courseName = 'Ваш курс'; // Здесь можно вставить из базы по course_id, если она есть
-
-  res.render('cabinet', {
-    user,
-    lessons: availableLessons,
-    courseName,
-    progress
-  });
+  res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
 });
 
-
-// Отдача урока
+// 📦 Урок (index.html)
 app.get('/lesson/:id', requireLogin, (req, res) => {
   const lessonId = req.params.id;
   const user = req.session.user;
 
   if (!user.access.includes(lessonId)) {
-    return res.status(403).send('⛔ У вас нет доступа к этому уроку');
+    return res.status(403).send('⛔ Нет доступа к уроку');
   }
 
   const lesson = lessons.find(l => l.id === lessonId);
-  if (!lesson) return res.status(404).send('Урок не найден');
+  if (!lesson) return res.status(404).send('⛔ Урок не найден');
 
   const filePath = path.join(__dirname, 'lessons', lesson.file);
+  if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Файл урока не найден');
+
   res.sendFile(filePath);
 });
 
-// Отдача статичных файлов урока (css, js, audio)
-app.get('/lesson/:id/*', requireLogin, (req, res) => {
+// 📦 Защищённая статика для урока
+app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
   const lessonId = req.params.id;
-  const fileRelative = req.params[0];
   const user = req.session.user;
 
   if (!user.access.includes(lessonId)) {
-    return res.status(403).send('⛔ Нет доступа к файлу');
+    return res.status(403).send('⛔ Нет доступа к файлам');
   }
 
-  const filePath = path.join(__dirname, 'lessons', lessonId, fileRelative);
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('Файл не найден');
-  }
-
-  res.sendFile(filePath);
+  const staticPath = path.join(__dirname, 'lessons', lessonId);
+  express.static(staticPath)(req, res, next);
 });
 
-// Выход
+// 🚪 Выход
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');
   });
 });
 
-// Главная
+// 🏠 Главная
 app.get('/', (req, res) => {
   if (req.session.user) return res.redirect('/cabinet');
   res.redirect('/login');
 });
 
 app.listen(port, () => {
-  console.log(`Сервер запущен http://localhost:${port}`);
+  console.log(`✅ Сервер запущен: http://localhost:${port}`);
 });
