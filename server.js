@@ -40,9 +40,9 @@ app.post('/login', async (req, res) => {
   const user = users.find(u => u.email === email);
   if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
-  if (password !== '12345') {
-  return res.render('login', { error: 'Неверный пароль' });
-}
+ const match = await bcrypt.compare(password, user.password);
+if (!match) return res.render('login', { error: 'Неверный пароль' });
+
 
 
   // Сохраняем в сессию
