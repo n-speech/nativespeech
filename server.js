@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 const session = require('express-session');
 
 const app = express();
@@ -33,16 +34,16 @@ app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// 🔐 Обработка логина (временно без bcrypt)
-app.post('/login', (req, res) => {
+// 🔐 Обработка логина
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   const user = users.find(u => u.email === email);
   if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
-  // Временно: проверка обычного пароля
-  if (password !== '12345') {
-    return res.render('login', { error: 'Неверный пароль' });
-  }
+  const match = await bcrypt.compare(password, user.password); // здесь сравнение с хэшем
+  if (!match) return res.render('login', { error: 'Неверный пароль' });
+
+  // успешный вход...
 
  // После успешного входа сохраняем в сессию
 req.session.user = {
