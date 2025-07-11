@@ -66,7 +66,7 @@ app.get('/cabinet', requireLogin, (req, res) => {
   const total = availableLessons.length;
   const completed = availableLessons.filter(l => l.grade).length;
   const progress = total ? Math.round((completed / total) * 100) : 0;
-  const courseName = 'Ваш курс';
+  const courseName = user.course || 'Ваш курс';
 
   res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
 });
