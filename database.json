@@ -1,12 +1,12 @@
 {
   "users": [
-    {
-      "email": "student@example.com",
-      "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
-      "name": "Анна",
-      "access": ["lesson1"]
-    }
-  ],
+  {
+    "email": "student@example.com",
+    "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
+    "name": "Анна",
+    "access": ["lesson1"]
+  }
+],
   "lessons": [
     {
       "id": "lesson1",
