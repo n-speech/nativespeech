@@ -47,7 +47,7 @@ app.post('/login', (req, res) => {
   req.session.user = {
     email: user.email,
     name: user.name || '',
-    course_id: user.course_id || null
+    course: user.course || null
     access: user.access || []
   };
 
