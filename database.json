@@ -3,7 +3,15 @@
   {
     "email": "dafna5566@gmail.com",
     "password": "$2a$12$jAmAEZvqAi/s3Q8eSNs8HOfpzgIpiVUXpbrjb8Tu7hgVmkuxgLeVu",
-    "name": "Анна",
+    "name": "Мария",
+    "access": ["lesson1"],
+    "course_id": "course1"
+  }
+
+    {
+    "email": "whynotstream@gmail.com",
+    "password": "$2a$12$hH./MCTfYX7LIEU/kgJKm.6NCSl.uIYWaZkdqy/hRcF3YzR7senv.",
+    "name": "Boris",
     "access": ["lesson1"],
     "course_id": "course1"
   }
