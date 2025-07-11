@@ -44,32 +44,44 @@ app.post('/login', (req, res) => {
     return res.render('login', { error: 'Неверный пароль' });
   }
 
-  req.session.user = {
-    email: user.email,
-    name: user.name || '',
-    course: user.course || null
-    access: user.access || []
-  };
+ // После успешного входа сохраняем в сессию
+req.session.user = {
+  email: user.email,
+  name: user.name || '',
+  course_id: user.course_id || null,   // исправлено: course_id вместо course
+  access: user.access || []
+};
 
-  res.redirect('/cabinet');
+res.redirect('/cabinet');
 });
 
 // 👤 Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
 
-  const availableLessons = lessons.map(lesson => ({
-    ...lesson,
-    access: user.access.includes(lesson.id),
-    grade: lesson.grade || null
-  }));
+  // Находим курс по course_id
+  const course = database.courses ? database.courses.find(c => c.id === user.course_id) : null;
+  const courseName = course ? course.title : 'Ваш курс';
+
+  // Фильтруем уроки по курсу пользователя
+  const availableLessons = lessons
+    .filter(lesson => lesson.course_id === user.course_id)
+    .map(lesson => ({
+      ...lesson,
+      access: user.access.includes(lesson.id),
+      grade: lesson.grade || null
+    }));
 
   const total = availableLessons.length;
   const completed = availableLessons.filter(l => l.grade).length;
   const progress = total ? Math.round((completed / total) * 100) : 0;
-  const courseName = user.course || 'Ваш курс';
 
-  res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
+  res.render('cabinet', {
+    user,
+    lessons: availableLessons,
+    courseName,
+    progress
+  });
 });
 
 // 📦 Урок (index.html)
@@ -89,6 +101,7 @@ app.get('/lesson/:id', requireLogin, (req, res) => {
 
   res.sendFile(filePath);
 });
+
 
 // 📦 Защищённая статика для урока
 app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
