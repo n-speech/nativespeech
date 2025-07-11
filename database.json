@@ -2,17 +2,15 @@
   "users": [
     {
       "email": "student@example.com",
-  "password": "$2b$12$XetDeBOUpYYDtjLGZVgw3euC6qlJnO0pvqmQHeIhPJbBx1PYirb/u",
-  "access": ["lesson1"]
+      "password": "$2b$12$XetDeBOUpYYDtjLGZVgw3euC6qlJnO0pvqmQHeIhPJbBx1PYirb/u",
+      "access": ["lesson1"]
     }
   ],
-  
   "lessons": [
-   {
-  "id": "lesson1",
-  "title": "Курс: Французский для начинающих. Урок 1.",
-  "file": "lesson1/index.html"
-}
-
+    {
+      "id": "lesson1",
+      "title": "Курс: Французский для начинающих. Урок 1.",
+      "file": "lesson1/index.html"
+    }
   ]
 }
