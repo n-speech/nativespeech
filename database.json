@@ -4,16 +4,35 @@
     "email": "dafna5566@gmail.com",
     "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
     "name": "Анна",
-    "course": "Французский для начинающих",
-    "access": ["lesson1"]
+    "access": ["lesson1"],
+    "course_id": "course1"
   }
 ],
+
+"courses": [
+    {
+      "id": "course1",
+      "title": "Французский для начинающих"
+    },
+    {
+      "id": "course2",
+      "title": "Английский для начинающих"
+    }
+  ],
+  
   "lessons": [
     {
       "id": "lesson1",
-      "title": "Курс: Французский для начинающих. Урок 1.",
+      "title": "Урок 1",
       "file": "lesson1/index.html",
+      "course_id": "course1",
       "grade": "Отлично"
+    },
+    {
+      "id": "lesson2",
+      "title": "Урок 2",
+      "file": "lesson2/index.html",
+      "course_id": "course1"
     }
   ]
 }
