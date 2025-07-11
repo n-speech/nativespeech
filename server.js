@@ -45,8 +45,9 @@ app.post('/login', async (req, res) => {
 
   // Сохраняем в сессию
   req.session.user = {
-    email: user.email,
-    access: user.access
+   email: user.email,
+  name: user.name || '',
+  access: user.access || []
   };
 
   res.redirect('/cabinet');
