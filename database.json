@@ -4,6 +4,7 @@
     "email": "dafna5566@gmail.com",
     "password": "$2b$12$RjGBLsRPdWyQMdCNKOAz9ew5mxGYPpKZ6GHsViApkEsGnWsmN4vHi",
     "name": "Анна",
+    "course": "Французский для начинающих",
     "access": ["lesson1"]
   }
 ],
