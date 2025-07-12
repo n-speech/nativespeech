@@ -35,9 +35,27 @@ h1, h2 {
 }
 
 h3 {
-  font-size: 1.5rem;
-  
+  font-size: 1.5rem; 
 }
+
+.btn-back {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background-color: #4a90e2; /* твой основной цвет */
+    border-radius: 6px;
+    text-decoration: none;
+    box-shadow: 0 3px 6px rgba(74, 144, 226, 0.4);
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+
+  .btn-back:hover {
+    background-color: #357abd;
+  }
 
 ul {
   text-align: left;
@@ -333,7 +351,7 @@ audio {
 </head>
 <body>
   <section class="title">   
-<a href="/cabinet">← Вернуться в личный кабинет</a>    
+<a href="/cabinet" class="btn-back">← Вернуться в личный кабинет</a>    
 <h1>📌 Тема: Знакомство с алфавитом. Буквы от Aa до Ff.</h1>
 <h1>🎯 Цель урока:</h1> 
 <ul>
