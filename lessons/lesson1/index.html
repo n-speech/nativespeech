@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Урок 1</title>
   <style>
+ :root {
+  --color-main: #FFD966;
+  --color-hover: #FCE27E;
+  --color-text: #241c15;
+  --color-bg: #ffffff;
+  --color-bg-light: #FFFBE8;
+  --color-border: #cccccc;
+  --color-blue: #0077cc;
+  --color-blue-hover: #005fa3;
+  --color-success: #c8f7c5;
+  --color-success-border: #3cba54;
+  --color-error: #ffc9c9;
+  --color-error-border: #ff4444;
+  --radius: 0.5rem;
+  --font-size-base: 1.1rem;
+  --font-size-large: 1.2rem;
+  --font-size-title: 2rem;
+  --font-size-subtitle: 1.5rem;
+  --max-width: 1000px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -15,75 +36,102 @@ html {
 
 body {
   font-family: Arial, sans-serif;
-  font-size: 1.1rem;
- /* padding-top: 1rem; */
-  padding-right: 1rem;
-  padding-bottom: 1rem;
-  padding-left: 1rem;
-  background-color: #ffffff;
-  color: #023d8ada;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
   margin: 0 auto;
-  max-width: 100%;
+  padding: 1rem;
+  max-width: var(--max-width);
   text-align: center;
 }
 
 /* Заголовки */
 h1, h2 {
-  font-size: 2rem;
+  font-size: var(--font-size-title);
   margin-bottom: 1rem;
-  
 }
 
 h3 {
-  font-size: 1.5rem; 
+  font-size: var(--font-size-subtitle);
+}
+
+/* Кнопка назад */
+.button-wrapper {
+  text-align: left;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .btn-back {
-    display: inline-block;
-    padding: 8px 15px;
-    margin: 10px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #fff;
-    background-color: #4a90e2; /* твой основной цвет */
-    border-radius: 6px;
-    text-decoration: none;
-    box-shadow: 0 3px 6px rgba(74, 144, 226, 0.4);
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
+  display: inline-block;
+  margin: 10px 0 0 0;
+  padding: 8px 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-main);
+  border-radius: var(--radius);
+  text-decoration: none;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
 
-  .btn-back:hover {
-    background-color: #357abd;
-  }
+.btn-back:hover {
+  background-color: var(--color-hover);
+}
 
+/* Списки */
 ul {
   text-align: left;
-  padding-left: 2rem; /* отступ слева для маркеров */
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  padding-left: 2rem;
+  margin: 1rem 0;
 }
 
 li {
-  font-size: 1.2rem;
+  font-size: var(--font-size-large);
   margin-bottom: 0.5rem;
 }
-    
 
 p {
-  font-size: 1.2rem;
+  font-size: var(--font-size-large);
   text-align: left;
 }
 
 /* Аудио */
 audio {
   display: block;
-  margin-top: 1rem;
-  margin-right: auto;
-  margin-bottom: 1rem;
-  margin-left: auto;
+  margin: 1rem auto;
   width: 18rem;
   max-width: 90%;
+}
+
+/* Видео */
+.video-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 80%;
+  padding-top: 56.25%;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .video-container {
+    max-width: 100%;
+  }
 }
 
 /* Буквы */
@@ -92,70 +140,60 @@ audio {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
 }
 
 .letter {
-  border-width: 2px;
-  border-style: solid;
-  border-color: orange;
- /* padding-top: 0.25rem;*/
-  padding-right: 0.25rem;
-  padding-bottom: 0.7rem;
-  padding-left: 0.25rem;
+  border: 2px solid var(--color-main);
+  background-color: var(--color-bg-light);
+  padding: 0.25rem;
   width: 3.5rem;
   height: 3.5rem;
   font-size: 1.5rem;
-  line-height: 3.5rem;
+  line-height: 2.8rem;
   text-align: center;
   cursor: pointer;
   user-select: none;
-  background-color: #f2f2f2;
   transition: background-color 0.2s ease, transform 0.2s ease;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
 }
 
 .letter:hover {
-  background-color: #e0f0ff;
+  background-color: #FDF2C2;
   transform: scale(1.05);
 }
 
 .letter.selected {
-  background-color: #d0e8ff;
-  border-color: #023e8a;
+  background-color: #dcdee0;
+  border-color: var(--color-main);
 }
 
 .letter.correct {
-  background-color: #c8f7c5;
-  border-color: #3cba54;
+  background-color: var(--color-success);
+  border-color: var(--color-success-border);
 }
 
 .letter.wrong {
-  background-color: #ffc9c9;
-  border-color: #ff4444;
+  background-color: var(--color-error);
+  border-color: var(--color-error-border);
 }
 
 /* Кнопка */
 .check-button {
   width: 100%;
   max-width: 18rem;
-  padding-top: 1rem;
-  padding-right: 1rem;
-  padding-bottom: 1rem;
-  padding-left: 1rem;
-  font-size: 1.2rem;
-  border-width: 0;
-  border-style: none;
-  border-radius: 0.5rem;
-  background-color: #0077cc;
-  color: #ffffff;
+  padding: 1rem;
+  font-size: var(--font-size-large);
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-main);
+  color: var(--color-text);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .check-button:hover {
-  background-color: #005fa3;
+  background-color: var(--color-hover);
 }
 
 /* Результат */
@@ -163,28 +201,22 @@ audio {
 #result {
   margin-top: 0.5rem;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: var(--font-size-base);
 }
 
 /* PDF */
 .pdf-wrapper {
   max-width: 53rem;
   width: 100%;
-  margin-top: 0;
-  margin-right: auto;
-  margin-bottom: 0;
-  margin-left: auto;
+  margin: 0 auto;
   aspect-ratio: 4 / 3;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #cccccc;
+  border: 1px solid var(--color-border);
 }
 
 .pdf-frame {
   width: 100%;
   height: 100%;
-  border-width: 0;
-  border-style: none;
+  border: none;
 }
 
 .pdf-link {
@@ -193,24 +225,18 @@ audio {
 
 /* Форма */
 .homework-form {
-  background-color: #f9f9f9;
+  
+  border-color: var(--color-main);
   border-radius: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding-top: 2rem;
-  padding-right: 2rem;
-  padding-bottom: 2rem;
-  padding-left: 2rem;
-  margin-top: 2rem;
-  margin-right: auto;
-  margin-bottom: 2rem;
-  margin-left: auto;
+  box-shadow: 0 4px 10px rgba(0.2, 0.2, 0.2, 0.2);
+  padding: 2rem;
+  margin: 2rem auto;
   max-width: 37.5rem;
-  font-family: Arial, sans-serif;
 }
 
 .homework-form h2 {
-  text-align: left;
-  color: #2c3e50;
+  text-align: center;
+  color: var(--color-text);
   margin-bottom: 1.5rem;
   font-size: 1.4rem;
 }
@@ -218,51 +244,46 @@ audio {
 .homework-form form {
   display: flex;
   flex-direction: column;
+   color: var(--color-text);
 }
 
 .homework-form label {
   margin-bottom: 0.5rem;
   font-weight: bold;
   font-size: 1rem;
+   color: var(--color-text);
 }
 
 .homework-form input[type="text"],
 .homework-form input[type="file"] {
-  padding-top: 0.75rem;
-  padding-right: 0.75rem;
-  padding-bottom: 0.75rem;
-  padding-left: 0.75rem;
+  padding: 0.75rem;
   margin-bottom: 1.5rem;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #cccccc;
-  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
   font-size: 1rem;
   width: 100%;
+   color: var(--color-text);
 }
 
 .homework-form input:focus {
-  border-color: #0077cc;
+  border-color: gray;
   outline: none;
 }
 
 .homework-form button {
-  background-color: #0077cc;
-  color: #ffffff;
-  border-width: 0;
-  border-style: none;
-  padding-top: 1rem;
-  padding-right: 1rem;
-  padding-bottom: 1rem;
-  padding-left: 1rem;
-  border-radius: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  font-size: var(--font-size-large);
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-main);
+  color: var(--color-text);
   cursor: pointer;
-  font-size: 1.1rem;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 .homework-form button:hover {
-  background-color: #005fa3;
+  background-color: var(--color-hover);
 }
 
 /* Мобильная адаптация */
@@ -271,16 +292,13 @@ audio {
     width: 3.5rem;
     height: 3.5rem;
     font-size: 1.5rem;
-    line-height: 3.5rem;
+    line-height: 2.8rem;
     padding-bottom: 0.6rem;
   }
 
   .check-button {
     font-size: 1.1rem;
-    padding-top: 0.8rem;
-    padding-right: 0.8rem;
-    padding-bottom: 0.8rem;
-    padding-left: 0.8rem;
+    padding: 0.8rem;
     max-width: 90%;
   }
 
@@ -290,46 +308,31 @@ audio {
 
   .pdf-link {
     display: block;
-    background-color: #0077cc;
+    background-color: var(--color-blue);
     color: #ffffff;
-    padding-top: 1rem;
-    padding-right: 1rem;
-    padding-bottom: 1rem;
-    padding-left: 1rem;
-    border-radius: 0.5rem;
+    padding: 1rem;
+    border-radius: var(--radius);
     text-align: center;
     text-decoration: none;
     font-size: 1.1rem;
     max-width: 18rem;
-    margin-top: 1.25rem;
-    margin-right: auto;
-    margin-bottom: 1.25rem;
-    margin-left: auto;
+    margin: 1.25rem auto;
   }
 
   .pdf-link:hover {
-    background-color: #005fa3;
+    background-color: var(--color-blue-hover);
   }
 
   .homework-form {
-    padding-top: 1.2rem;
-    padding-right: 1.2rem;
-    padding-bottom: 1.2rem;
-    padding-left: 1.2rem;
-    margin-top: 1rem;
-    margin-right: 1rem;
-    margin-bottom: 1rem;
-    margin-left: 1rem;
+    padding: 1.2rem;
+    margin: 1rem;
   }
 
   .homework-form h2 {
     font-size: 1.2rem;
   }
 
-  .homework-form label {
-    font-size: 1rem;
-  }
-
+  .homework-form label,
   .homework-form input,
   .homework-form button {
     font-size: 1rem;
@@ -341,10 +344,7 @@ audio {
   max-width: 100%;
   height: auto;
   display: block;
-  margin-top: 0;
-  margin-right: auto;
-  margin-bottom: 0;
-  margin-left: auto;
+  margin: 0 auto;
 }
 
   </style>
@@ -369,9 +369,19 @@ audio {
 </section>
   
     <h1>🎬 Видео. Буквы от A до F</h1>
-<div style="padding:56.21% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1087346783?h=ca8b7df0be&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="lesson1"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
-   
- 
+<div class="video-wrapper">
+  <div class="video-container">
+    <iframe src="https://player.vimeo.com/video/1087346783?h=ca8b7df0be&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+      frameborder="0"
+      allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+      title="lesson1"
+      allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+<script src="https://player.vimeo.com/api/player.js"></script>
+  
   <section class="title">
     <h1>Часть 2. Упражнения </h1>
     <p>
@@ -563,87 +573,100 @@ audio {
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-  // ===== Упражнения с выбором одной буквы =====
-  document.querySelectorAll('.choice-exercise').forEach(section => {
-    const letters = section.querySelectorAll('.letter');
-    const checkBtn = section.querySelector('.check-button');
-    const result = section.querySelector('.result');
-    const audio = section.querySelector('audio');
-    let selected = null;
+    // ===== Упражнения с выбором одной буквы =====
+    document.querySelectorAll('.choice-exercise').forEach(section => {
+      const letters = section.querySelectorAll('.letter');
+      const checkBtn = section.querySelector('.check-button');
+      const result = section.querySelector('.result');
+      const audio = section.querySelector('audio');
+      let selectedElement = null;
 
-    letters.forEach(letter => {
-      letter.addEventListener('click', () => {
-        letters.forEach(l => l.classList.remove('selected'));
-        letter.classList.add('selected');
-        selected = letter.textContent.trim();
-      });
-    });
-
-    checkBtn.addEventListener('click', () => {
-      if (!selected) {
-        result.textContent = 'Пожалуйста, выберите вариант.';
-        result.style.color = 'orange';
-        return;
-      }
-      const correct = section.dataset.correct;
-      if (selected === correct) {
-        result.textContent = 'Верно!';
-        result.style.color = 'green';
-      } else {
-        result.textContent = 'Неверно. Попробуйте снова.';
-        result.style.color = 'red';
-      }
-    });
-
-    audio.addEventListener('play', () => {
-      selected = null;
-      letters.forEach(l => l.classList.remove('selected'));
-      result.textContent = '';
-    });
-  });
-
-  // ===== Упражнения с выбором нескольких букв в правильном порядке =====
-  document.querySelectorAll('.exercise').forEach(section => {
-    const letters = section.querySelectorAll('.letter');
-    const checkBtn = section.querySelector('.check-button');
-    const result = section.querySelector('.result');
-    const audio = section.querySelector('audio');
-    const expected = section.dataset.answer.split(',');
-    let selected = [];
-
-    letters.forEach(letter => {
-      letter.addEventListener('click', () => {
-        if (!letter.classList.contains('selected')) {
+      letters.forEach(letter => {
+        letter.addEventListener('click', () => {
+          letters.forEach(l => l.classList.remove('selected', 'correct', 'wrong'));
           letter.classList.add('selected');
-          selected.push(letter.textContent.trim());
+          selectedElement = letter;
+        });
+      });
+
+      checkBtn.addEventListener('click', () => {
+        if (!selectedElement) {
+          result.textContent = 'Пожалуйста, выберите вариант.';
+          result.style.color = 'orange';
+          return;
+        }
+
+        const selected = selectedElement.textContent.trim();
+        const correct = section.dataset.correct;
+
+        letters.forEach(l => l.classList.remove('correct', 'wrong'));
+
+        if (selected === correct) {
+          result.textContent = 'Верно!';
+          result.style.color = 'green';
+          selectedElement.classList.add('correct');
+        } else {
+          result.textContent = 'Неверно. Попробуйте снова.';
+          result.style.color = 'red';
+          selectedElement.classList.add('wrong');
         }
       });
+
+      audio.addEventListener('play', () => {
+        selectedElement = null;
+        letters.forEach(l => l.classList.remove('selected', 'correct', 'wrong'));
+        result.textContent = '';
+      });
     });
 
-    checkBtn.addEventListener('click', () => {
-      if (selected.length === 0) {
-        result.textContent = 'Пожалуйста, выберите буквы.';
-        result.style.color = 'orange';
-        return;
-      }
+    // ===== Упражнения с выбором нескольких букв в правильном порядке =====
+    document.querySelectorAll('.exercise').forEach(section => {
+      const letters = section.querySelectorAll('.letter');
+      const checkBtn = section.querySelector('.check-button');
+      const result = section.querySelector('.result');
+      const audio = section.querySelector('audio');
+      const expected = section.dataset.answer.split(',');
+      let selected = [];
 
-      const correct = JSON.stringify(selected) === JSON.stringify(expected);
-      if (correct) {
-        result.textContent = 'Правильно!';
-        result.style.color = 'green';
-      } else {
-        result.textContent = 'Неверно. Попробуйте снова.';
-        result.style.color = 'red';
-      }
-    });
+      letters.forEach(letter => {
+        letter.addEventListener('click', () => {
+          if (!letter.classList.contains('selected')) {
+            letter.classList.add('selected');
+            selected.push(letter);
+          }
+        });
+      });
 
-    audio.addEventListener('play', () => {
-      selected = [];
-      letters.forEach(l => l.classList.remove('selected'));
-      result.textContent = '';
+      checkBtn.addEventListener('click', () => {
+        if (selected.length === 0) {
+          result.textContent = 'Пожалуйста, выберите буквы.';
+          result.style.color = 'orange';
+          return;
+        }
+
+        const selectedText = selected.map(l => l.textContent.trim());
+        const isCorrect = JSON.stringify(selectedText) === JSON.stringify(expected);
+
+        letters.forEach(l => l.classList.remove('correct', 'wrong'));
+
+        if (isCorrect) {
+          result.textContent = 'Правильно!';
+          result.style.color = 'green';
+          selected.forEach(l => l.classList.add('correct'));
+        } else {
+          result.textContent = 'Неверно. Попробуйте снова.';
+          result.style.color = 'red';
+          selected.forEach(l => l.classList.add('wrong'));
+        }
+      });
+
+      audio.addEventListener('play', () => {
+        selected = [];
+        letters.forEach(l => l.classList.remove('selected', 'correct', 'wrong'));
+        result.textContent = '';
+      });
     });
   });
-});
 </script>
 </body>
 </html>
