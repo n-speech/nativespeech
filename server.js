@@ -3,19 +3,22 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-
-// Загружаем базу
-const database = JSON.parse(fs.readFileSync('./database.json', 'utf8'));
-const users = database.users;
-const lessons = database.lessons;
+// Подключаем базу SQLite
+const db = new sqlite3.Database('./data.db', (err) => {
+  if (err) {
+    console.error('❌ Ошибка подключения к базе:', err.message);
+  } else {
+    console.log('✅ Подключено к базе данных SQLite');
+  }
+});
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
@@ -36,57 +39,62 @@ app.get('/login', (req, res) => {
 });
 
 // 🔐 Обработка логина
-app.post('/login', async (req, res) => {
+app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  const user = users.find(u => u.email === email);
-  if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
-console.log('Введённый пароль:', password);
-console.log('Хэш из базы:', user.password);
+  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+    if (err || !user) {
+      return res.render('login', { error: 'Пользователь не найден' });
+    }
 
-  
-  const match = await bcrypt.compare(password, user.password); // здесь сравнение с хэшем
-  if (!match) return res.render('login', { error: 'Неверный пароль' });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.render('login', { error: 'Неверный пароль' });
+    }
 
-  // успешный вход...
+    // Получаем доступные уроки для пользователя
+    db.all('SELECT lesson_id FROM user_access WHERE email = ?', [email], (err, rows) => {
+      const access = rows.map(r => r.lesson_id);
 
- // После успешного входа сохраняем в сессию
-req.session.user = {
-  email: user.email,
-  name: user.name || '',
-  course_id: user.course_id || null,   // исправлено: course_id вместо course
-  access: user.access || []
-};
+      req.session.user = {
+        email: user.email,
+        name: user.name || '',
+        course_id: user.course_id,
+        access
+      };
 
-res.redirect('/cabinet');
+      res.redirect('/cabinet');
+    });
+  });
 });
 
 // 👤 Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
   const user = req.session.user;
 
-  // Находим курс по course_id
-  const course = database.courses ? database.courses.find(c => c.id === user.course_id) : null;
-  const courseName = course ? course.title : 'Ваш курс';
+  db.get('SELECT title FROM courses WHERE id = ?', [user.course_id], (err, course) => {
+    const courseName = course ? course.title : 'Ваш курс';
 
-  // Фильтруем уроки по курсу пользователя
-  const availableLessons = lessons
-    .filter(lesson => lesson.course_id === user.course_id)
-    .map(lesson => ({
-      ...lesson,
-      access: user.access.includes(lesson.id),
-      grade: lesson.grade || null
-    }));
+    db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
+      if (err) return res.send('❌ Ошибка загрузки уроков');
 
-  const total = availableLessons.length;
-  const completed = availableLessons.filter(l => l.grade).length;
-  const progress = total ? Math.round((completed / total) * 100) : 0;
+      const availableLessons = lessons.map(lesson => ({
+        ...lesson,
+        access: user.access.includes(lesson.id),
+        grade: lesson.grade || null
+      }));
 
-  res.render('cabinet', {
-    user,
-    lessons: availableLessons,
-    courseName,
-    progress
+      const total = availableLessons.length;
+      const completed = availableLessons.filter(l => l.grade).length;
+      const progress = total ? Math.round((completed / total) * 100) : 0;
+
+      res.render('cabinet', {
+        user,
+        lessons: availableLessons,
+        courseName,
+        progress
+      });
+    });
   });
 });
 
@@ -99,15 +107,15 @@ app.get('/lesson/:id', requireLogin, (req, res) => {
     return res.status(403).send('⛔ Нет доступа к уроку');
   }
 
-  const lesson = lessons.find(l => l.id === lessonId);
-  if (!lesson) return res.status(404).send('⛔ Урок не найден');
+  db.get('SELECT * FROM lessons WHERE id = ?', [lessonId], (err, lesson) => {
+    if (!lesson) return res.status(404).send('⛔ Урок не найден');
 
-  const filePath = path.join(__dirname, 'lessons', lesson.file);
-  if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Файл урока не найден');
+    const filePath = path.join(__dirname, 'lessons', lesson.file);
+    if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Файл урока не найден');
 
-  res.sendFile(filePath);
+    res.sendFile(filePath);
+  });
 });
-
 
 // 📦 Защищённая статика для урока
 app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
