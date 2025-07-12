@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
 
 // Загружаем базу
 const database = JSON.parse(fs.readFileSync('./database.json', 'utf8'));
