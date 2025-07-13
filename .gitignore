@@ -1,0 +1,19 @@
+# Node.js
+node_modules/
+.env
+
+# SQLite база данных
+data/data.db
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Кэш и временные файлы
+.DS_Store
+*.log
+
+# Сборка (если используешь)
+dist/
+build/
