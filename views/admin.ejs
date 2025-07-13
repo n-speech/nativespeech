@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Админ-панель</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: #fdfdfd;
+      color: #241c15;
+    }
+
+    h1 {
+      color: #241c15;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    input, select, button {
+      padding: 0.7rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #FFD966;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ebdd9a;
+    }
+
+    .message {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Админ-панель</h1>
+  <form action="/admin" method="POST">
+    <label>
+      Email ученика:
+      <input type="email" name="user_email" required>
+    </label>
+
+    <label>
+      ID урока:
+      <input type="text" name="lesson_id" required>
+    </label>
+
+    <label>
+      Оценка:
+      <input type="text" name="grade" placeholder="например: Отлично, Хорошо">
+    </label>
+
+    <label>
+      Доступ к уроку:
+      <select name="access">
+        <option value="1">Открыт</option>
+        <option value="0">Закрыт</option>
+      </select>
+    </label>
+
+    <button type="submit">Сохранить</button>
+  </form>
+
+  <% if (message) { %>
+    <div class="message"><%= message %></div>
+  <% } %>
+</body>
+</html>
