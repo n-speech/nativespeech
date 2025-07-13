@@ -8,14 +8,14 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Подключаем базу SQLite
-const db = new sqlite3.Database('./data.db', (err) => {
+const db = new sqlite3.Database(path.join(__dirname, 'data', 'data.db'), (err) => {
   if (err) {
     console.error('❌ Ошибка подключения к базе:', err.message);
   } else {
     console.log('✅ Подключено к базе данных SQLite');
   }
 });
+
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
