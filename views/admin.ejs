@@ -5,79 +5,86 @@
   <title>Админ-панель</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fdfdfd;
-      color: #241c15;
-      margin: 2rem auto;
-      padding: 1rem;
-      max-width: 600px;
-    }
+  font-family: Arial, sans-serif;
+  background-color: #fdfdfd;
+  color: #241c15;
+  margin: 1rem auto; /* Было 2rem */
+  padding: 1rem;
+  max-width: 500px; /* Было 600px */
+  font-size: 1rem; /* Общий базовый размер шрифта */
+}
 
-    h1 {
-      text-align: center;
-    }
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
 
-    .form-container {
-      background-color: #FFFBE8;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
+.form-container {
+  background-color: #FFFBE8;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-top: 0.5rem;
+}
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
-    label {
-      display: flex;
-      flex-direction: column;
-      font-weight: bold;
-    }
+label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 1rem;
+}
 
-    input, select {
-      padding: 0.7rem;
-      font-size: 0.5rem;
-      border-radius: 0.5rem;
-      border: 1px solid #ccc;
-      margin-top: 0.3rem;
-    }
+input, select {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  margin-top: 0.25rem;
+}
 
-    .button-row {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
 
-    .button-row button,
-    .button-row .button-link {
-      flex: 1;
-      max-width: 250px;
-      padding: 0.7rem 1rem;
-      font-size: 1rem;
-      border-radius: 0.5rem;
-      background-color: #FFD966;
-      color: #000;
-      font-weight: bold;
-      text-decoration: none;
-      text-align: center;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+.button-row button,
+.button-row .button-link {
+  flex: 1;
+  max-width: 220px;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  background-color: #FFD966;
+  color: #000;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-    .button-row button:hover,
-    .button-row .button-link:hover {
-      background-color: #ebdd9a;
-    }
+.button-row button:hover,
+.button-row .button-link:hover {
+  background-color: #ebdd9a;
+}
 
-    .message {
-      margin-top: 0.5rem;
-      color: green;
-      text-align: center;
-    }
+.message {
+  margin-top: 0.75rem;
+  color: green;
+  text-align: center;
+  font-size: 1rem;
+}
+
   </style>
 </head>
 <body>
