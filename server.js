@@ -48,24 +48,47 @@ app.post('/admin', requireLogin, (req, res) => {
     return res.status(403).send('⛔ Доступ запрещён');
   }
 
-  const { user_email, lesson_id, grade, access } = req.body;
+  const { user_email, lesson_id, grade, access, course_id } = req.body;
 
-  const sql = `
+  const queries = [];
+
+  // 1. Обновить или вставить user_lessons
+  const lessonQuery = `
     INSERT INTO user_lessons (user_email, lesson_id, grade, access)
     VALUES (?, ?, ?, ?)
     ON CONFLICT(user_email, lesson_id)
     DO UPDATE SET grade = excluded.grade, access = excluded.access
   `;
+  queries.push(new Promise((resolve, reject) => {
+    db.run(lessonQuery, [user_email, lesson_id, grade, access], function (err) {
+      if (err) return reject(err);
+      resolve();
+    });
+  }));
 
-  db.run(sql, [user_email, lesson_id, grade, access], function (err) {
-    if (err) {
-      console.error('❌ Ошибка при добавлении/обновлении:', err.message);
-      return res.render('admin', { message: 'Произошла ошибка при сохранении.' });
-    }
+  // 2. Обновить курс пользователя, если задан course_id
+  if (course_id) {
+    const courseQuery = `
+      UPDATE users SET course_id = ? WHERE email = ?
+    `;
+    queries.push(new Promise((resolve, reject) => {
+      db.run(courseQuery, [course_id, user_email], function (err) {
+        if (err) return reject(err);
+        resolve();
+      });
+    }));
+  }
 
-    res.render('admin', { message: '✅ Данные успешно сохранены!' });
-  });
+  Promise.all(queries)
+    .then(() => {
+      res.render('admin', { message: '✅ Данные успешно сохранены!' });
+    })
+    .catch(err => {
+      console.error('❌ Ошибка при сохранении:', err.message);
+      res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+    });
 });
+
 
 // 🔐 Страница логина
 app.get('/login', (req, res) => {
