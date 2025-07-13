@@ -48,7 +48,8 @@ app.post('/admin', requireLogin, async (req, res) => {
     return res.status(403).send('⛔ Доступ запрещён');
   }
 
-  const { user_email, lesson_id, grade, access, course_id, password } = req.body;
+  const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
+
 
   try {
     // Проверяем пользователя
@@ -68,8 +69,8 @@ app.post('/admin', requireLogin, async (req, res) => {
 
       await new Promise((resolve, reject) => {
         db.run(
-          'INSERT INTO users (email, password, course_id) VALUES (?, ?, ?)',
-          [user_email, hashedPassword, course_id || null],
+  'INSERT INTO users (name, email, password, course_id) VALUES (?, ?, ?, ?)',
+  [name, user_email, hashedPassword, course_id || null],
           (err) => (err ? reject(err) : resolve())
         );
       });
@@ -88,14 +89,15 @@ app.post('/admin', requireLogin, async (req, res) => {
 
     // Вставляем или обновляем user_lessons
     await new Promise((resolve, reject) => {
-      const sql = `
-        INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(user_email, lesson_id)
-        DO UPDATE SET grade = excluded.grade, access = excluded.access
-      `;
-      db.run(sql, [user_email, lesson_id, grade, access], (err) => (err ? reject(err) : resolve()));
-    });
+  const sql = `
+    INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(user_email, lesson_id)
+    DO UPDATE SET grade = excluded.grade, access = excluded.access
+  `;
+  const accessNum = access === '1' ? 1 : 0;
+  db.run(sql, [user_email, lesson_id, grade, accessNum], (err) => (err ? reject(err) : resolve()));
+});
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
   } catch (error) {
