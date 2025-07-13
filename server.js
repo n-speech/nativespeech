@@ -33,6 +33,40 @@ function requireLogin(req, res, next) {
   next();
 }
 
+// GET /admin (только для info@native-speech.com)
+app.get('/admin', requireLogin, (req, res) => {
+  if (req.session.user.email !== 'info@native-speech.com') {
+    return res.status(403).send('⛔ Доступ запрещён');
+  }
+
+  res.render('admin', { message: null });
+});
+
+// POST /admin
+app.post('/admin', requireLogin, (req, res) => {
+  if (req.session.user.email !== 'info@native-speech.com') {
+    return res.status(403).send('⛔ Доступ запрещён');
+  }
+
+  const { user_email, lesson_id, grade, access } = req.body;
+
+  const sql = `
+    INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(user_email, lesson_id)
+    DO UPDATE SET grade = excluded.grade, access = excluded.access
+  `;
+
+  db.run(sql, [user_email, lesson_id, grade, access], function (err) {
+    if (err) {
+      console.error('❌ Ошибка при добавлении/обновлении:', err.message);
+      return res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+    }
+
+    res.render('admin', { message: '✅ Данные успешно сохранены!' });
+  });
+});
+
 // 🔐 Страница логина
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
