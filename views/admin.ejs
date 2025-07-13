@@ -37,26 +37,36 @@
       border: none;
       font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
       background-color: #ebdd9a;
     }
 
-    .logout-button {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #ff4d4f;
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: bold;
-}
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
 
-.logout-button:hover {
-  background-color: #e03e3e;
-}
+    .button-link {
+      display: inline-block;
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
+      background-color: #FFD966;
+      color: #000;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .button-link:hover {
+      background-color: #ebdd9a;
+    }
 
     .message {
       margin-top: 1rem;
@@ -66,46 +76,45 @@
 </head>
 <body>
   <h1>Админ-панель</h1>
- <form action="/admin" method="POST">
-  <label>
-    Email ученика:
-    <input type="email" name="user_email" required>
-  </label>
+  <form action="/admin" method="POST">
+    <label>
+      Email ученика:
+      <input type="email" name="user_email" required>
+    </label>
 
-  <label>
-  Пароль (только для нового пользователя):
-  <input type="text" name="password">
-  </label>
+    <label>
+      Пароль (только для нового пользователя):
+      <input type="text" name="password">
+    </label>
 
+    <label>
+      ID курса:
+      <input type="text" name="course_id">
+    </label>
 
-  <label>
-    ID курса:
-    <input type="text" name="course_id">
-  </label>
+    <label>
+      ID урока:
+      <input type="text" name="lesson_id" required>
+    </label>
 
-  <label>
-    ID урока:
-    <input type="text" name="lesson_id" required>
-  </label>
+    <label>
+      Доступ к уроку:
+      <select name="access">
+        <option value="1">Открыт</option>
+        <option value="0">Закрыт</option>
+      </select>
+    </label>
 
-  <label>
-    Доступ к уроку:
-    <select name="access">
-      <option value="1">Открыт</option>
-      <option value="0">Закрыт</option>
-    </select>
-  </label>
+    <label>
+      Оценка:
+      <input type="text" name="grade">
+    </label>
 
-  <label>
-    Оценка:
-    <input type="text" name="grade">
-  </label>
-
-  <button type="submit">💾 Сохранить</button>
-</form>
-
-<a href="/logout" class="logout-button">🚪 Выйти</a>
-
+    <div class="button-row">
+      <button type="submit">💾 Сохранить</button>
+      <a href="/logout" class="button-link">🚪 Выйти</a>
+    </div>
+  </form>
 
   <% if (message) { %>
     <div class="message"><%= message %></div>
