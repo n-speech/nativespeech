@@ -112,34 +112,35 @@ app.post('/login', (req, res) => {
 
 
 // 👤 Кабинет
-app.get('/cabinet', requireLogin, (req, res) => {
-  const user = req.session.user;
+db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
+  if (err) return res.send('❌ Ошибка загрузки уроков');
 
-  db.get('SELECT title FROM courses WHERE id = ?', [user.course_id], (err, course) => {
-    const courseName = course ? course.title : 'Ваш курс';
+  // Загружаем оценки из user_lessons
+  db.all('SELECT lesson_id, grade FROM user_lessons WHERE user_email = ?', [user.email], (err2, grades) => {
+    const gradeMap = {};
+    grades.forEach(g => {
+      gradeMap[g.lesson_id] = g.grade;
+    });
 
-    db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
-      if (err) return res.send('❌ Ошибка загрузки уроков');
+    const availableLessons = lessons.map(lesson => ({
+      ...lesson,
+      access: user.access.includes(lesson.id),
+      grade: gradeMap[lesson.id] || null
+    }));
 
-      const availableLessons = lessons.map(lesson => ({
-        ...lesson,
-        access: user.access.includes(lesson.id),
-        grade: lesson.grade || null
-      }));
+    const total = availableLessons.length;
+    const completed = availableLessons.filter(l => l.grade).length;
+    const progress = total ? Math.round((completed / total) * 100) : 0;
 
-      const total = availableLessons.length;
-      const completed = availableLessons.filter(l => l.grade).length;
-      const progress = total ? Math.round((completed / total) * 100) : 0;
-
-      res.render('cabinet', {
-        user,
-        lessons: availableLessons,
-        courseName,
-        progress
-      });
+    res.render('cabinet', {
+      user,
+      lessons: availableLessons,
+      courseName,
+      progress
     });
   });
 });
+
 
 // 📦 Урок (index.html)
 app.get('/lesson/:id', requireLogin, (req, res) => {
