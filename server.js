@@ -88,6 +88,10 @@ app.post('/login', (req, res) => {
 
     // Получаем доступные уроки для пользователя
     db.all('SELECT lesson_id FROM user_access WHERE email = ?', [email], (err, rows) => {
+      if (err) {
+        return res.render('login', { error: 'Ошибка при получении доступа' });
+      }
+
       const access = rows.map(r => r.lesson_id);
 
       req.session.user = {
@@ -97,10 +101,15 @@ app.post('/login', (req, res) => {
         access
       };
 
-      res.redirect('/cabinet');
+      if (user.email === 'info@native-speech.com') {
+        return res.redirect('/admin'); // Админ — на панель управления
+      } else {
+        return res.redirect('/cabinet'); // Все остальные — в кабинет
+      }
     });
   });
 });
+
 
 // 👤 Кабинет
 app.get('/cabinet', requireLogin, (req, res) => {
