@@ -89,6 +89,14 @@ input, select {
 </head>
 <body>
   <h2>Админ-панель</h2>
+      <div class="button-row">
+        <button type="submit">💾 Сохранить</button>
+        <a href="/logout" class="button-link">🚪 Выйти</a>
+      </div>
+
+ <% if (message) { %>
+    <div class="message"><%= message %></div>
+  <% } %>
 
   <div class="form-container">
     <form action="/admin" method="POST">
@@ -130,16 +138,9 @@ input, select {
         Оценка:
         <input type="text" name="grade">
       </label>
-
-      <div class="button-row">
-        <button type="submit">💾 Сохранить</button>
-        <a href="/logout" class="button-link">🚪 Выйти</a>
-      </div>
     </form>
   </div>
 
-  <% if (message) { %>
-    <div class="message"><%= message %></div>
-  <% } %>
+ 
 </body>
 </html>
