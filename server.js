@@ -128,8 +128,9 @@ app.post('/login', (req, res) => {
       return res.render('login', { error: 'Неверный пароль' });
     }
 
-    // Получаем доступные уроки для пользователя
-    db.all('SELECT lesson_id FROM user_access WHERE email = ?', [email], (err, rows) => {
+   // Получаем доступные уроки из user_lessons, где access = 1
+      db.all('SELECT lesson_id FROM user_lessons WHERE user_email = ? AND access = 1', [email], (err, rows) => {
+
       if (err) {
         return res.render('login', { error: 'Ошибка при получении доступа' });
       }
