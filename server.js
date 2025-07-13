@@ -48,23 +48,53 @@ app.post('/admin', requireLogin, (req, res) => {
     return res.status(403).send('⛔ Доступ запрещён');
   }
 
-  const { user_email, lesson_id, grade, access, course_id } = req.body;
+  const { user_email, lesson_id, grade, access, course_id, password } = req.body;
 
-  const queries = [];
+  db.get('SELECT * FROM users WHERE email = ?', [user_email], async (err, existingUser) => {
+    if (err) {
+      console.error('❌ Ошибка поиска пользователя:', err.message);
+      return res.render('admin', { message: 'Ошибка при поиске пользователя.' });
+    }
 
-  // 1. Обновить или вставить user_lessons
-  const lessonQuery = `
-    INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(user_email, lesson_id)
-    DO UPDATE SET grade = excluded.grade, access = excluded.access
-  `;
-  queries.push(new Promise((resolve, reject) => {
-    db.run(lessonQuery, [user_email, lesson_id, grade, access], function (err) {
-      if (err) return reject(err);
-      resolve();
+    // Если пользователь не существует — создаём нового
+    if (!existingUser) {
+      if (!password) {
+        return res.render('admin', { message: '❗ Укажите пароль для нового пользователя' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      db.run(
+        'INSERT INTO users (email, password, course_id) VALUES (?, ?, ?)',
+        [user_email, hashedPassword, course_id || null],
+        (err) => {
+          if (err) {
+            console.error('❌ Ошибка при создании пользователя:', err.message);
+          } else {
+            console.log(`✅ Новый пользователь создан: ${user_email}`);
+          }
+        }
+      );
+    }
+
+    // Обновляем user_lessons
+    const sql = `
+      INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_email, lesson_id)
+      DO UPDATE SET grade = excluded.grade, access = excluded.access
+    `;
+
+    db.run(sql, [user_email, lesson_id, grade, access], function (err) {
+      if (err) {
+        console.error('❌ Ошибка при обновлении user_lessons:', err.message);
+        return res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+      }
+
+      res.render('admin', { message: '✅ Данные успешно сохранены!' });
     });
-  }));
+  });
+});
 
   // 2. Обновить курс пользователя, если задан course_id
   if (course_id) {
