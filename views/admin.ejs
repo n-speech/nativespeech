@@ -6,53 +6,55 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 1rem;
       background-color: #fdfdfd;
       color: #241c15;
+      margin: 2rem auto;
+      padding: 1rem;
+      max-width: 600px;
     }
 
     h1 {
-      color: #241c15;
       text-align: center;
+    }
+
+    .form-container {
+      background-color: #f1f1f1;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
     form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      margin-top: 2rem;
     }
 
-    input, select, button {
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+    }
+
+    input, select {
       padding: 0.7rem;
       font-size: 1rem;
       border-radius: 0.5rem;
       border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #FFD966;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #ebdd9a;
+      margin-top: 0.3rem;
     }
 
     .button-row {
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
       gap: 1rem;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
     }
 
-    .button-link {
-      display: inline-block;
+    .button-row button,
+    .button-row .button-link {
+      flex: 1;
+      max-width: 250px;
       padding: 0.7rem 1rem;
       font-size: 1rem;
       border-radius: 0.5rem;
@@ -61,60 +63,67 @@
       font-weight: bold;
       text-decoration: none;
       text-align: center;
+      border: none;
+      cursor: pointer;
       transition: background-color 0.3s ease;
     }
 
-    .button-link:hover {
+    .button-row button:hover,
+    .button-row .button-link:hover {
       background-color: #ebdd9a;
     }
 
     .message {
       margin-top: 1rem;
       color: green;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <h1>Админ-панель</h1>
-  <form action="/admin" method="POST">
-    <label>
-      Email ученика:
-      <input type="email" name="user_email" required>
-    </label>
 
-    <label>
-      Пароль (только для нового пользователя):
-      <input type="text" name="password">
-    </label>
+  <div class="form-container">
+    <form action="/admin" method="POST">
+      <label>
+        Email ученика:
+        <input type="email" name="user_email" required>
+      </label>
 
-    <label>
-      ID курса:
-      <input type="text" name="course_id">
-    </label>
+      <label>
+        Пароль (только для нового пользователя):
+        <input type="text" name="password">
+      </label>
 
-    <label>
-      ID урока:
-      <input type="text" name="lesson_id" required>
-    </label>
+      <label>
+        ID курса:
+        <input type="text" name="course_id">
+      </label>
 
-    <label>
-      Доступ к уроку:
-      <select name="access">
-        <option value="1">Открыт</option>
-        <option value="0">Закрыт</option>
-      </select>
-    </label>
+      <label>
+        ID урока:
+        <input type="text" name="lesson_id" required>
+      </label>
 
-    <label>
-      Оценка:
-      <input type="text" name="grade">
-    </label>
+      <label>
+        Доступ к уроку:
+        <select name="access">
+          <option value="1">Открыт</option>
+          <option value="0">Закрыт</option>
+        </select>
+      </label>
 
-    <div class="button-row">
-      <button type="submit">💾 Сохранить</button>
-      <a href="/logout" class="button-link">🚪 Выйти</a>
-    </div>
-  </form>
+      <label>
+        Оценка:
+        <input type="text" name="grade">
+      </label>
+
+      <div class="button-row">
+        <button type="submit">💾 Сохранить</button>
+        <a href="/logout" class="button-link">🚪 Выйти</a>
+      </div>
+    </form>
+  </div>
 
   <% if (message) { %>
     <div class="message"><%= message %></div>
