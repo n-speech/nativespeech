@@ -94,8 +94,8 @@ input, select {
     <form action="/admin" method="POST">
 
       <label>
-      Имя ученика:
-      <input type="text" name="name" required>
+        Имя ученика:
+        <input type="text" name="name" required>
       </label>
 
       <label>
@@ -130,16 +130,20 @@ input, select {
         Оценка:
         <input type="text" name="grade">
       </label>
-    </form>
-  </div>
- <div class="button-row">
+
+      <!-- ✅ Кнопки теперь внутри формы -->
+      <div class="button-row">
         <button type="submit">💾 Сохранить</button>
         <a href="/logout" class="button-link">🚪 Выйти</a>
       </div>
 
- <% if (message) { %>
-    <div class="message"><%= message %></div>
-  <% } %>
- 
+    </form>
+
+    <% if (message) { %>
+      <div class="message"><%= message %></div>
+    <% } %>
+
+  </div>
 </body>
+
 </html>
