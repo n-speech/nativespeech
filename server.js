@@ -43,82 +43,69 @@ app.get('/admin', requireLogin, (req, res) => {
 });
 
 // POST /admin
-app.post('/admin', requireLogin, (req, res) => {
+app.post('/admin', requireLogin, async (req, res) => {
   if (req.session.user.email !== 'info@native-speech.com') {
     return res.status(403).send('⛔ Доступ запрещён');
   }
 
   const { user_email, lesson_id, grade, access, course_id, password } = req.body;
 
-  db.get('SELECT * FROM users WHERE email = ?', [user_email], async (err, existingUser) => {
-    if (err) {
-      console.error('❌ Ошибка поиска пользователя:', err.message);
-      return res.render('admin', { message: 'Ошибка при поиске пользователя.' });
-    }
+  try {
+    // Проверяем пользователя
+    const existingUser = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE email = ?', [user_email], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
 
-    // Если пользователь не существует — создаём нового
+    // Если нет пользователя, создаём нового (с паролем)
     if (!existingUser) {
       if (!password) {
         return res.render('admin', { message: '❗ Укажите пароль для нового пользователя' });
       }
-
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      db.run(
-        'INSERT INTO users (email, password, course_id) VALUES (?, ?, ?)',
-        [user_email, hashedPassword, course_id || null],
-        (err) => {
-          if (err) {
-            console.error('❌ Ошибка при создании пользователя:', err.message);
-          } else {
-            console.log(`✅ Новый пользователь создан: ${user_email}`);
-          }
-        }
-      );
+      await new Promise((resolve, reject) => {
+        db.run(
+          'INSERT INTO users (email, password, course_id) VALUES (?, ?, ?)',
+          [user_email, hashedPassword, course_id || null],
+          (err) => (err ? reject(err) : resolve())
+        );
+      });
+    } else {
+      // Если пользователь есть, и course_id задан, обновляем курс
+      if (course_id) {
+        await new Promise((resolve, reject) => {
+          db.run(
+            'UPDATE users SET course_id = ? WHERE email = ?',
+            [course_id, user_email],
+            (err) => (err ? reject(err) : resolve())
+          );
+        });
+      }
     }
 
-    // Обновляем user_lessons
-    const sql = `
-      INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-      VALUES (?, ?, ?, ?)
-      ON CONFLICT(user_email, lesson_id)
-      DO UPDATE SET grade = excluded.grade, access = excluded.access
-    `;
-
-    db.run(sql, [user_email, lesson_id, grade, access], function (err) {
-      if (err) {
-        console.error('❌ Ошибка при обновлении user_lessons:', err.message);
-        return res.render('admin', { message: 'Произошла ошибка при сохранении.' });
-      }
-
-      res.render('admin', { message: '✅ Данные успешно сохранены!' });
+    // Вставляем или обновляем user_lessons
+    await new Promise((resolve, reject) => {
+      const sql = `
+        INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(user_email, lesson_id)
+        DO UPDATE SET grade = excluded.grade, access = excluded.access
+      `;
+      db.run(sql, [user_email, lesson_id, grade, access], (err) => (err ? reject(err) : resolve()));
     });
-  });
-});
 
-  // 2. Обновить курс пользователя, если задан course_id
-  if (course_id) {
-    const courseQuery = `
-      UPDATE users SET course_id = ? WHERE email = ?
-    `;
-    queries.push(new Promise((resolve, reject) => {
-      db.run(courseQuery, [course_id, user_email], function (err) {
-        if (err) return reject(err);
-        resolve();
-      });
-    }));
+    res.render('admin', { message: '✅ Данные успешно сохранены!' });
+  } catch (error) {
+    console.error('❌ Ошибка в POST /admin:', error);
+    res.render('admin', { message: 'Произошла ошибка при сохранении.' });
   }
-
-  Promise.all(queries)
-    .then(() => {
-      res.render('admin', { message: '✅ Данные успешно сохранены!' });
-    })
-    .catch(err => {
-      console.error('❌ Ошибка при сохранении:', err.message);
-      res.render('admin', { message: 'Произошла ошибка при сохранении.' });
-    });
 });
 
+   
+ 
 
 // 🔐 Страница логина
 app.get('/login', (req, res) => {
