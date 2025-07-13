@@ -111,35 +111,63 @@ app.post('/login', (req, res) => {
 });
 
 
-// 👤 Кабинет
-db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
-  if (err) return res.send('❌ Ошибка загрузки уроков');
+// 👤 Кабинет — страница личного кабинета
+app.get('/cabinet', requireLogin, (req, res) => {
+  const user = req.session.user;
 
-  // Загружаем оценки из user_lessons
-  db.all('SELECT lesson_id, grade FROM user_lessons WHERE user_email = ?', [user.email], (err2, grades) => {
-    const gradeMap = {};
-    grades.forEach(g => {
-      gradeMap[g.lesson_id] = g.grade;
-    });
+  // Сначала получаем название курса из таблицы courses
+  db.get('SELECT title FROM courses WHERE id = ?', [user.course_id], (err, course) => {
+    if (err) {
+      console.error('❌ Ошибка при получении курса:', err);
+      return res.send('❌ Ошибка загрузки курса');
+    }
 
-    const availableLessons = lessons.map(lesson => ({
-      ...lesson,
-      access: user.access.includes(lesson.id),
-      grade: gradeMap[lesson.id] || null
-    }));
+    const courseName = course ? course.title : 'Ваш курс';
 
-    const total = availableLessons.length;
-    const completed = availableLessons.filter(l => l.grade).length;
-    const progress = total ? Math.round((completed / total) * 100) : 0;
+    // Получаем все уроки курса
+    db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
+      if (err) {
+        console.error('❌ Ошибка загрузки уроков:', err);
+        return res.send('❌ Ошибка загрузки уроков');
+      }
 
-    res.render('cabinet', {
-      user,
-      lessons: availableLessons,
-      courseName,
-      progress
+      // Загружаем оценки пользователя из таблицы user_lessons
+      db.all('SELECT lesson_id, grade FROM user_lessons WHERE user_email = ?', [user.email], (err2, grades) => {
+        if (err2) {
+          console.error('❌ Ошибка загрузки оценок:', err2);
+          return res.send('❌ Ошибка загрузки оценок');
+        }
+
+        // Создаём объект для быстрого доступа к оценкам по уроку
+        const gradeMap = {};
+        grades.forEach(g => {
+          gradeMap[g.lesson_id] = g.grade;
+        });
+
+        // Формируем список уроков с доступом и оценкой
+        const availableLessons = lessons.map(lesson => ({
+          ...lesson,
+          access: user.access.includes(lesson.id),
+          grade: gradeMap[lesson.id] || null
+        }));
+
+        // Считаем прогресс: сколько уроков пройдено (с оценкой)
+        const total = availableLessons.length;
+        const completed = availableLessons.filter(l => l.grade).length;
+        const progress = total ? Math.round((completed / total) * 100) : 0;
+
+        // Отдаём страницу кабинета с данными
+        res.render('cabinet', {
+          user,
+          lessons: availableLessons,
+          courseName,
+          progress
+        });
+      });
     });
   });
 });
+
 
 
 // 📦 Урок (index.html)
