@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+     "pg": "^8.11.1",
     "sqlite3": "^5.1.6",
     "bcrypt": "^5.1.0",
     "ejs": "^3.1.9",
