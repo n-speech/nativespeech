@@ -3,19 +3,25 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const db = new sqlite3.Database(path.join(__dirname, 'data', 'data.db'), (err) => {
-  if (err) {
-    console.error('❌ Ошибка подключения к базе:', err.message);
-  } else {
-    console.log('✅ Подключено к базе данных SQLite');
-  }
+// PostgreSQL pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
+pool.connect()
+  .then(() => console.log('✅ Подключено к базе данных PostgreSQL (Railway)'))
+  .catch(err => {
+    console.error('❌ Ошибка подключения к PostgreSQL:', err);
+    process.exit(1);
+  });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -25,7 +31,7 @@ app.use(session({
   secret: 'секрет_сессии',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false }
+  cookie: { secure: false },
 }));
 
 function requireLogin(req, res, next) {
@@ -33,16 +39,13 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// GET /admin (только для info@native-speech.com)
 app.get('/admin', requireLogin, (req, res) => {
   if (req.session.user.email !== 'info@native-speech.com') {
     return res.status(403).send('⛔ Доступ запрещён');
   }
-
   res.render('admin', { message: null });
 });
 
-// POST /admin
 app.post('/admin', requireLogin, async (req, res) => {
   if (req.session.user.email !== 'info@native-speech.com') {
     return res.status(403).send('⛔ Доступ запрещён');
@@ -50,54 +53,30 @@ app.post('/admin', requireLogin, async (req, res) => {
 
   const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
 
-
   try {
-    // Проверяем пользователя
-    const existingUser = await new Promise((resolve, reject) => {
-      db.get('SELECT * FROM users WHERE email = ?', [user_email], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
+    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [user_email]);
+    const existingUser = userResult.rows[0];
 
-    // Если нет пользователя, создаём нового (с паролем)
     if (!existingUser) {
       if (!password) {
         return res.render('admin', { message: '❗ Укажите пароль для нового пользователя' });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      await new Promise((resolve, reject) => {
-        db.run(
-  'INSERT INTO users (name, email, password, course_id) VALUES (?, ?, ?, ?)',
-  [name, user_email, hashedPassword, course_id || null],
-          (err) => (err ? reject(err) : resolve())
-        );
-      });
-    } else {
-      // Если пользователь есть, и course_id задан, обновляем курс
-      if (course_id) {
-        await new Promise((resolve, reject) => {
-          db.run(
-            'UPDATE users SET course_id = ? WHERE email = ?',
-            [course_id, user_email],
-            (err) => (err ? reject(err) : resolve())
-          );
-        });
-      }
+      await pool.query(
+        'INSERT INTO users (name, email, password, course_id) VALUES ($1, $2, $3, $4)',
+        [name, user_email, hashedPassword, course_id || null]
+      );
+    } else if (course_id) {
+      await pool.query('UPDATE users SET course_id = $1 WHERE email = $2', [course_id, user_email]);
     }
 
-    // Вставляем или обновляем user_lessons
-    await new Promise((resolve, reject) => {
-  const sql = `
-    INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(user_email, lesson_id)
-    DO UPDATE SET grade = excluded.grade, access = excluded.access
-  `;
-  const accessNum = access === '1' ? 1 : 0;
-  db.run(sql, [user_email, lesson_id, grade, accessNum], (err) => (err ? reject(err) : resolve()));
-});
+    const accessNum = access === '1' ? 1 : 0;
+    await pool.query(`
+      INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT(user_email, lesson_id)
+      DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access
+    `, [user_email, lesson_id, grade, accessNum]);
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
   } catch (error) {
@@ -106,153 +85,108 @@ app.post('/admin', requireLogin, async (req, res) => {
   }
 });
 
-   
- 
-
-// 🔐 Страница логина
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// 🔐 Обработка логина
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
-  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (err || !user) {
-      return res.render('login', { error: 'Пользователь не найден' });
-    }
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    if (!user) return res.render('login', { error: 'Пользователь не найден' });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.render('login', { error: 'Неверный пароль' });
+    if (!match) return res.render('login', { error: 'Неверный пароль' });
+
+    const accessResult = await pool.query('SELECT lesson_id FROM user_lessons WHERE user_email = $1 AND access = 1', [email]);
+    const access = accessResult.rows.map(r => r.lesson_id);
+
+    req.session.user = {
+      email: user.email,
+      name: user.name || '',
+      course_id: user.course_id,
+      access,
+    };
+
+    if (user.email === 'info@native-speech.com') {
+      return res.redirect('/admin');
+    } else {
+      return res.redirect('/cabinet');
     }
-
-   // Получаем доступные уроки из user_lessons, где access = 1
-      db.all('SELECT lesson_id FROM user_lessons WHERE user_email = ? AND access = 1', [email], (err, rows) => {
-
-      if (err) {
-        return res.render('login', { error: 'Ошибка при получении доступа' });
-      }
-
-      const access = rows.map(r => r.lesson_id);
-
-      req.session.user = {
-        email: user.email,
-        name: user.name || '',
-        course_id: user.course_id,
-        access
-      };
-
-      if (user.email === 'info@native-speech.com') {
-        return res.redirect('/admin'); // Админ — на панель управления
-      } else {
-        return res.redirect('/cabinet'); // Все остальные — в кабинет
-      }
-    });
-  });
+  } catch (error) {
+    console.error('Ошибка при логине:', error);
+    res.render('login', { error: 'Произошла ошибка' });
+  }
 });
 
-
-// 👤 Кабинет — страница личного кабинета
-app.get('/cabinet', requireLogin, (req, res) => {
+app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
+  try {
+    const courseResult = await pool.query('SELECT title FROM courses WHERE id = $1', [user.course_id]);
+    const courseName = courseResult.rows[0] ? courseResult.rows[0].title : 'Ваш курс';
 
-  // Сначала получаем название курса из таблицы courses
-  db.get('SELECT title FROM courses WHERE id = ?', [user.course_id], (err, course) => {
-    if (err) {
-      console.error('❌ Ошибка при получении курса:', err);
-      return res.send('❌ Ошибка загрузки курса');
-    }
+    const lessonsResult = await pool.query('SELECT * FROM lessons WHERE course_id = $1', [user.course_id]);
+    const lessons = lessonsResult.rows;
 
-    const courseName = course ? course.title : 'Ваш курс';
+    const gradesResult = await pool.query('SELECT lesson_id, grade FROM user_lessons WHERE user_email = $1', [user.email]);
+    const gradeMap = {};
+    gradesResult.rows.forEach(g => gradeMap[g.lesson_id] = g.grade);
 
-    // Получаем все уроки курса
-    db.all('SELECT * FROM lessons WHERE course_id = ?', [user.course_id], (err, lessons) => {
-      if (err) {
-        console.error('❌ Ошибка загрузки уроков:', err);
-        return res.send('❌ Ошибка загрузки уроков');
-      }
+    const availableLessons = lessons.map(lesson => ({
+      ...lesson,
+      access: user.access.includes(lesson.id),
+      grade: gradeMap[lesson.id] || null,
+    }));
 
-      // Загружаем оценки пользователя из таблицы user_lessons
-      db.all('SELECT lesson_id, grade FROM user_lessons WHERE user_email = ?', [user.email], (err2, grades) => {
-        if (err2) {
-          console.error('❌ Ошибка загрузки оценок:', err2);
-          return res.send('❌ Ошибка загрузки оценок');
-        }
+    const total = availableLessons.length;
+    const completed = availableLessons.filter(l => l.grade).length;
+    const progress = total ? Math.round((completed / total) * 100) : 0;
 
-        // Создаём объект для быстрого доступа к оценкам по уроку
-        const gradeMap = {};
-        grades.forEach(g => {
-          gradeMap[g.lesson_id] = g.grade;
-        });
-
-        // Формируем список уроков с доступом и оценкой
-        const availableLessons = lessons.map(lesson => ({
-          ...lesson,
-          access: user.access.includes(lesson.id),
-          grade: gradeMap[lesson.id] || null
-        }));
-
-        // Считаем прогресс: сколько уроков пройдено (с оценкой)
-        const total = availableLessons.length;
-        const completed = availableLessons.filter(l => l.grade).length;
-        const progress = total ? Math.round((completed / total) * 100) : 0;
-
-        // Отдаём страницу кабинета с данными
-        res.render('cabinet', {
-          user,
-          lessons: availableLessons,
-          courseName,
-          progress
-        });
-      });
-    });
-  });
+    res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
+  } catch (err) {
+    console.error('❌ Ошибка загрузки данных кабинета:', err);
+    res.send('❌ Ошибка загрузки данных');
+  }
 });
 
-
-
-// 📦 Урок (index.html)
-app.get('/lesson/:id', requireLogin, (req, res) => {
+app.get('/lesson/:id', requireLogin, async (req, res) => {
   const lessonId = req.params.id;
   const user = req.session.user;
-
   if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ Нет доступа к уроку');
   }
-
-  db.get('SELECT * FROM lessons WHERE id = ?', [lessonId], (err, lesson) => {
+  try {
+    const result = await pool.query('SELECT * FROM lessons WHERE id = $1', [lessonId]);
+    const lesson = result.rows[0];
     if (!lesson) return res.status(404).send('⛔ Урок не найден');
 
     const filePath = path.join(__dirname, 'lessons', lesson.file);
     if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Файл урока не найден');
 
     res.sendFile(filePath);
-  });
+  } catch (err) {
+    console.error('Ошибка загрузки урока:', err);
+    res.status(500).send('❌ Ошибка сервера');
+  }
 });
 
-// 📦 Защищённая статика для урока
 app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
   const lessonId = req.params.id;
   const user = req.session.user;
-
   if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ Нет доступа к файлам');
   }
-
   const staticPath = path.join(__dirname, 'lessons', lessonId);
   express.static(staticPath)(req, res, next);
 });
 
-// 🚪 Выход
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');
   });
 });
 
-// 🏠 Главная
 app.get('/', (req, res) => {
   if (req.session.user) return res.redirect('/cabinet');
   res.redirect('/login');
