@@ -124,7 +124,11 @@ app.post('/login', async (req, res) => {
 app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
   try {
-    const courseResult = await pool.query('SELECT title FROM courses WHERE id = $1', [user.course_id]);
+    const lessonsResult = await pool.query(
+  'SELECT * FROM lessons WHERE course_id = $1 ORDER BY number ASC',
+  [user.course_id]
+);
+
     const courseName = courseResult.rows[0] ? courseResult.rows[0].title : 'Ваш курс';
 
     const lessonsResult = await pool.query('SELECT * FROM lessons WHERE course_id = $1 ORDER BY number ASC', [user.course_id]);
