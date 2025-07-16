@@ -127,7 +127,7 @@ app.get('/cabinet', requireLogin, async (req, res) => {
     const courseResult = await pool.query('SELECT title FROM courses WHERE id = $1', [user.course_id]);
     const courseName = courseResult.rows[0] ? courseResult.rows[0].title : 'Ваш курс';
 
-    const lessonsResult = await pool.query('SELECT * FROM lessons WHERE course_id = $1', [user.course_id]);
+    const lessonsResult = await pool.query('SELECT * FROM lessons WHERE course_id = $1 ORDER BY number ASC', [user.course_id]);
     const lessons = lessonsResult.rows;
 
     const gradesResult = await pool.query('SELECT lesson_id, grade FROM user_lessons WHERE user_email = $1', [user.email]);
