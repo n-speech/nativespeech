@@ -55,6 +55,10 @@ app.post('/admin', requireLogin, async (req, res) => {
   const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
 
   try {
+    // Приводим lesson_id к строке
+    const lessonId = lesson_id.toString();
+
+    // Проверяем, есть ли такой пользователь
     const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [user_email]);
     const existingUser = userResult.rows[0];
 
@@ -72,19 +76,22 @@ app.post('/admin', requireLogin, async (req, res) => {
     }
 
     const accessNum = access === '1' ? 1 : 0;
+
+    // Вставляем или обновляем данные по урокам
     await pool.query(`
       INSERT INTO user_lessons (user_email, lesson_id, grade, access)
       VALUES ($1, $2, $3, $4)
       ON CONFLICT(user_email, lesson_id)
       DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access
-    `, [user_email, lesson_id, grade, accessNum]);
+    `, [user_email, lessonId, grade, accessNum]);
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
   } catch (error) {
-    console.error('❌ Ошибка в POST /admin:', error);
+    console.error('❌ Ошибка в POST /admin:', error.stack);
     res.render('admin', { message: 'Произошла ошибка при сохранении.' });
   }
 });
+
 
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
@@ -100,14 +107,18 @@ app.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.render('login', { error: 'Неверный пароль' });
 
-    const accessResult = await pool.query('SELECT lesson_id FROM user_lessons WHERE user_email = $1 AND access = 1', [email]);
-    const access = accessResult.rows.map(r => r.lesson_id);
+    // Приводим lesson_id к строке
+    const accessResult = await pool.query(
+      'SELECT lesson_id FROM user_lessons WHERE user_email = $1 AND access = 1',
+      [email]
+    );
+    const access = accessResult.rows.map(r => r.lesson_id.toString());
 
     req.session.user = {
       email: user.email,
       name: user.name || '',
       course_id: user.course_id,
-      access,
+      access, // массив строк
     };
 
     if (user.email === 'info@native-speech.com') {
@@ -120,6 +131,7 @@ app.post('/login', async (req, res) => {
     res.render('login', { error: 'Произошла ошибка' });
   }
 });
+
 
 app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
@@ -143,7 +155,7 @@ app.get('/cabinet', requireLogin, async (req, res) => {
   // Собираем уроки с доступом и оценками
   const availableLessons = lessons.map(lesson => ({
     ...lesson,
-    access: user.access.includes(lesson.id),
+    access: user.access.includes(lesson.id.toString()),
     grade: gradeMap[lesson.id] || null,
   }));
 
@@ -159,11 +171,13 @@ app.get('/cabinet', requireLogin, async (req, res) => {
 });
 
 app.get('/lesson/:id', requireLogin, async (req, res) => {
-  const lessonId = req.params.id;
+  const lessonId = req.params.id.toString();
   const user = req.session.user;
+
   if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ Нет доступа к уроку');
   }
+
   try {
     const result = await pool.query('SELECT * FROM lessons WHERE id = $1', [lessonId]);
     const lesson = result.rows[0];
@@ -180,7 +194,7 @@ app.get('/lesson/:id', requireLogin, async (req, res) => {
 });
 
 app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
-  const lessonId = req.params.id;
+  const lessonId = req.params.id.toString();
   const user = req.session.user;
   if (!user.access.includes(lessonId)) {
     return res.status(403).send('⛔ Нет доступа к файлам');
