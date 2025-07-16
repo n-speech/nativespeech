@@ -55,6 +55,8 @@ app.post('/admin', requireLogin, async (req, res) => {
   const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
 
   try {
+    console.log('🔽 Данные из формы:', req.body);
+
     // Приводим lesson_id к строке
     const lessonId = lesson_id.toString();
 
