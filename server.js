@@ -86,10 +86,11 @@ app.post('/admin', requireLogin, async (req, res) => {
     `, [user_email, lessonId, grade, accessNum]);
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
-  } catch (error) {
-    console.error('❌ Ошибка в POST /admin:', error.stack);
-    res.render('admin', { message: 'Произошла ошибка при сохранении.' });
-  }
+ } catch (error) {
+  console.error('❌ Ошибка в POST /admin:', error.stack); // покажет полную трассировку
+  res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+}
+
 });
 
 
