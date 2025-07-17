@@ -26,6 +26,9 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 
+// 👉 Добавлено:
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session({
   secret: 'секрет_сессии',
   resave: false,
@@ -37,6 +40,15 @@ function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   next();
 }
+
+// 👉 Добавлено:
+app.get('/', (req, res) => {
+  if (req.session.user) {
+    return res.redirect('/cabinet');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 // 👤 Админка
 app.get('/admin', requireLogin, (req, res) => {
@@ -195,9 +207,6 @@ app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });
 
-app.get('/', (req, res) => {
-  return req.session.user ? res.redirect('/cabinet') : res.redirect('/login');
-});
 
 app.get('/protected-file/:course/:lesson/*', requireLogin, (req, res) => {
   const { course, lesson } = req.params;
