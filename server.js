@@ -9,15 +9,10 @@ const { Pool } = require('pg');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Статические файлы для курсов
-app.use('/courses', express.static(path.join(__dirname, 'courses')));
-
 // PostgreSQL pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: { rejectUnauthorized: false },
 });
 
 pool.connect()
@@ -43,6 +38,7 @@ function requireLogin(req, res, next) {
   next();
 }
 
+// 👤 Админка
 app.get('/admin', requireLogin, (req, res) => {
   if (req.session.user.email !== 'info@native-speech.com') {
     return res.status(403).send('⛔ Доступ запрещён');
@@ -58,12 +54,8 @@ app.post('/admin', requireLogin, async (req, res) => {
   const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
 
   try {
-    console.log('🔽 Данные из формы:', req.body);
-
-    // Приводим lesson_id к строке
     const lessonId = lesson_id.toString();
 
-    // Проверяем, есть ли такой пользователь
     const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [user_email]);
     const existingUser = userResult.rows[0];
 
@@ -80,25 +72,24 @@ app.post('/admin', requireLogin, async (req, res) => {
       await pool.query('UPDATE users SET course_id = $1 WHERE email = $2', [course_id, user_email]);
     }
 
+    const accessKey = `${course_id}/${lessonId}`; // 💡 Новый формат доступа
     const accessNum = access === '1' ? 1 : 0;
 
-    // Вставляем или обновляем данные по урокам
     await pool.query(`
       INSERT INTO user_lessons (user_email, lesson_id, grade, access)
       VALUES ($1, $2, $3, $4)
       ON CONFLICT(user_email, lesson_id)
       DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access
-    `, [user_email, lessonId, grade, accessNum]);
+    `, [user_email, accessKey, grade, accessNum]);
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
- } catch (error) {
-  console.error('❌ Ошибка в POST /admin:', error.stack); // покажет полную трассировку
-  res.render('admin', { message: 'Произошла ошибка при сохранении.' });
-}
-
+  } catch (error) {
+    console.error('❌ Ошибка в POST /admin:', error.stack);
+    res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+  }
 });
 
-
+// 🔐 Авторизация
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
@@ -113,7 +104,6 @@ app.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.render('login', { error: 'Неверный пароль' });
 
-    // Приводим lesson_id к строке
     const accessResult = await pool.query(
       'SELECT lesson_id FROM user_lessons WHERE user_email = $1 AND access = 1',
       [email]
@@ -124,100 +114,89 @@ app.post('/login', async (req, res) => {
       email: user.email,
       name: user.name || '',
       course_id: user.course_id,
-      access, // массив строк
+      access, // пример: ["F1/lesson1", "F1/lesson2"]
     };
 
-    if (user.email === 'info@native-speech.com') {
-      return res.redirect('/admin');
-    } else {
-      return res.redirect('/cabinet');
-    }
+    return res.redirect(user.email === 'info@native-speech.com' ? '/admin' : '/cabinet');
   } catch (error) {
     console.error('Ошибка при логине:', error);
     res.render('login', { error: 'Произошла ошибка' });
   }
 });
 
-
+// 🎓 Кабинет ученика
 app.get('/cabinet', requireLogin, async (req, res) => {
   const user = req.session.user;
   try {
-  // Получаем название курса
-  const courseResult = await pool.query('SELECT title FROM courses WHERE id = $1', [user.course_id]);
-  const courseName = courseResult.rows[0] ? courseResult.rows[0].title : 'Ваш курс';
+    const courseResult = await pool.query('SELECT title FROM courses WHERE id = $1', [user.course_id]);
+    const courseName = courseResult.rows[0] ? courseResult.rows[0].title : 'Ваш курс';
 
-  // Получаем уроки с сортировкой по number
-  const lessonsResult = await pool.query(
-    'SELECT * FROM lessons WHERE course_id = $1 ORDER BY number ASC',
-    [user.course_id]
-  );
-  const lessons = lessonsResult.rows;
+    const lessonsResult = await pool.query(
+      'SELECT * FROM lessons WHERE course_id = $1 ORDER BY number ASC',
+      [user.course_id]
+    );
+    const lessons = lessonsResult.rows;
 
-  // Получаем оценки пользователя
-  const gradesResult = await pool.query('SELECT lesson_id, grade FROM user_lessons WHERE user_email = $1', [user.email]);
-  const gradeMap = {};
-  gradesResult.rows.forEach(g => gradeMap[g.lesson_id] = g.grade);
+    const gradesResult = await pool.query(
+      'SELECT lesson_id, grade FROM user_lessons WHERE user_email = $1',
+      [user.email]
+    );
+    const gradeMap = {};
+    gradesResult.rows.forEach(g => gradeMap[g.lesson_id] = g.grade);
 
-  // Собираем уроки с доступом и оценками
-  const availableLessons = lessons.map(lesson => ({
-    ...lesson,
-    access: user.access.includes(lesson.id.toString()),
-    grade: gradeMap[lesson.id] || null,
-  }));
+    const availableLessons = lessons.map(lesson => {
+      const key = `${user.course_id}/${lesson.id}`;
+      return {
+        ...lesson,
+        access: user.access.includes(key),
+        grade: gradeMap[key] || null,
+      };
+    });
 
-  const total = availableLessons.length;
-  const completed = availableLessons.filter(l => l.grade).length;
-  const progress = total ? Math.round((completed / total) * 100) : 0;
+    const total = availableLessons.length;
+    const completed = availableLessons.filter(l => l.grade).length;
+    const progress = total ? Math.round((completed / total) * 100) : 0;
 
-  res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
-} catch (err) {
-  console.error('❌ Ошибка загрузки данных кабинета:', err);
-  res.send('❌ Ошибка загрузки данных');
-}
-});
-
-app.get('/lesson/:id', requireLogin, async (req, res) => {
-  const lessonId = req.params.id.toString();
-  const user = req.session.user;
-
-  if (!user.access.includes(lessonId)) {
-    return res.status(403).send('⛔ Нет доступа к уроку');
-  }
-
-  try {
-    const result = await pool.query('SELECT * FROM lessons WHERE id = $1', [lessonId]);
-    const lesson = result.rows[0];
-    if (!lesson) return res.status(404).send('⛔ Урок не найден');
-
-    const filePath = path.join(__dirname, 'lessons', lesson.file);
-    if (!fs.existsSync(filePath)) return res.status(404).send('⛔ Файл урока не найден');
-
-    res.sendFile(filePath);
+    res.render('cabinet', { user, lessons: availableLessons, courseName, progress });
   } catch (err) {
-    console.error('Ошибка загрузки урока:', err);
-    res.status(500).send('❌ Ошибка сервера');
+    console.error('❌ Ошибка загрузки данных кабинета:', err);
+    res.send('❌ Ошибка загрузки данных');
   }
 });
 
-app.use('/lesson/:id/static', requireLogin, (req, res, next) => {
-  const lessonId = req.params.id.toString();
+// 🆕 НОВЫЙ маршрут: урок с курсом
+app.get('/lesson/:course/:id', requireLogin, (req, res) => {
+  const { course, id } = req.params;
   const user = req.session.user;
-  if (!user.access.includes(lessonId)) {
-    return res.status(403).send('⛔ Нет доступа к файлам');
+  const accessKey = `${course}/${id}`;
+
+  if (!user.access.includes(accessKey)) {
+    return res.status(403).send('⛔ Нет доступа к этому уроку');
   }
-  const staticPath = path.join(__dirname, 'lessons', lessonId);
-  express.static(staticPath)(req, res, next);
+
+  const lessonPath = path.join(__dirname, 'courses', course, id, 'index.html');
+  if (fs.existsSync(lessonPath)) {
+    res.sendFile(lessonPath);
+  } else {
+    res.status(404).send('⛔ Файл урока не найден');
+  }
+});
+
+// 🌐 СТАРЫЙ маршрут → редирект (опционально)
+app.get('/lesson/:id', requireLogin, (req, res) => {
+  const lessonId = req.params.id;
+  const user = req.session.user;
+  const course = user.course_id || 'F1'; // дефолтный курс
+
+  return res.redirect(`/lesson/${course}/${lessonId}`);
 });
 
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login');
-  });
+  req.session.destroy(() => res.redirect('/login'));
 });
 
 app.get('/', (req, res) => {
-  if (req.session.user) return res.redirect('/cabinet');
-  res.redirect('/login');
+  return req.session.user ? res.redirect('/cabinet') : res.redirect('/login');
 });
 
 app.listen(port, () => {
