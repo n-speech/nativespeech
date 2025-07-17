@@ -1,1 +1,407 @@
 
+:root {
+  --main-color: #023e8a;
+  --accent-color: #ffad69;
+  --accent-color2: #ffd966;
+  --bg-color: #f9f9f9;
+  --text-color: #241c15;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* Общие стили */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  width: 100%;
+    /*max-width: 1200px;*/
+  padding-top: 50px;
+  margin: 0 auto;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  font-size: 16px;
+  }
+
+   /* ===== HEADER ===== */
+  .header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content:space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 50px;
+    box-shadow: var(--shadow);
+  }
+
+  
+  .logo {
+    height: 30px;
+    margin: 0;
+  }
+  
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 1rem;
+    gap: 2rem;
+  }
+  
+  .nav a {
+    text-decoration: none;
+    color: var(--main-color);
+    font-size: 1.2rem;
+  }
+
+.nav a:hover {
+     font-weight: 450;
+  }
+
+  /* ===== LOGIN BUTTON ===== */  
+ .login-button-wrapper {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+.login-button {
+  position: relative;
+  z-index: 1;
+  padding: 6px 16px 7px 16px;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-color);
+  background-color: var(--accent-color2);
+  border: 1px solid var(--main-color);
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-block;
+  box-sizing: border-box;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.login-button-shadow {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #023e8a;
+  border-radius: 9999px;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-sizing: border-box;
+}
+
+ .login-button-wrapper:hover .login-button {
+      transform: translateY(-5px);
+    }
+
+ .login-button-wrapper:hover .login-button-shadow {
+      opacity: 1;
+    }
+
+ .login-button:active {
+      transform: scale(0.96);
+    }
+
+  /* ===== BURGER ===== */
+  .burger {
+    display: none;
+    font-size: 2rem;
+    background: none;
+    cursor: pointer;
+    border: none; 
+  }
+
+    /* ===== HEADINGS ===== */
+ h1 {
+  font-size: 2rem; 
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--main-color);
+  margin: 1rem 1rem 0.5rem 2rem;
+}
+
+h2 {
+  font-size: 1.5rem; 
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--main-color);
+  margin: 1rem 1rem 0.5rem 2rem;
+}
+    
+ .highlight {
+  position: relative;
+  display: inline-block;
+  line-height: 1.2; /* помогает точнее позиционировать */
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px; /* смещение вниз от низа текста */
+  width: 100%;
+  height: 6px; /* толщина полоски */
+  background-color: var(--accent-color2);
+  z-index: -1;
+  border-radius: 2px;
+}
+  
+  /* ===== ADAPTIVE NAV ===== */
+    @media (max-width: 780px) {
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 50px;
+    right: 0.5rem;
+    background: white;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 999;
+    width: 180px;
+    border-radius: 12px;
+  }
+
+  .nav.show {
+    display: flex;
+  }
+
+  .burger {
+    display: block;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+  }
+}
+
+.desktop-image {
+  position: relative;
+  padding-top: 0;
+  width: 100%;            /* 100% ширины окна */
+  display: block;  
+  margin: 0 auto;
+    }
+
+.mobile-image {
+   display: none;
+   width: 100%; /* 100% ширины окна */
+   padding-top: 0;
+   margin: 0 auto;
+    }
+
+@media (max-width: 767px) {
+  .desktop-image {
+   display: none;
+   }
+  .mobile-image {
+   display: block;
+  }
+    }
+
+    /* ===== COURSE CARDS ===== */
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    justify-items: center;
+  }
+  
+   .course-card {
+      width: 100%;
+      max-width: 360px;
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .course-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .course-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    .course-card .content {
+      padding: 1rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .course-card h3 {
+      font-size: 1.5rem;
+      color: var(--main-color);
+     /* margin-bottom: 0.5rem;*/
+    }
+
+    .course-card p {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .course-card .more {
+      font-size: 1rem;
+      color: var(--accent-color2);
+      font-weight: 500;
+      text-decoration: underline;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    /* ===== BUTTON ===== */
+    .btn {
+    position: relative;
+    padding: 12px 20px;
+    background: none;
+    color: var(--main-color);
+    border: 2px solid var(--main-color);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    overflow: hidden;
+    z-index: 0;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    }
+    .btn::before {
+      content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--main-color);
+    transition: left 0.3s ease;
+    z-index: -1;
+    }
+  
+    /* Наведение на кнопку */
+    .btn:hover::before {
+      left: 0;
+    }
+    .btn:hover {
+      color: white;
+    }
+
+      /* ===== PAGE CONTENT ===== */
+  .page1 {
+    margin: 0 1rem 0rem 2rem;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: var(--text-color);
+ }
+  
+  .page1 li::marker {
+  color: var(--accent-color2); /* Только кружочки */
+}
+
+  .whatsapp-btn {
+  background-color: #25D366;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 16px;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
+}
+
+.whatsapp-btn:hover {
+  background-color: #1ebe5d;
+}
+
+     footer {
+    margin-top: 2rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    text-align: center;
+ }
+
+  
+.lang {
+  border-radius: 8px;
+}
+    
+  /* ===== MOBILE ADAPTATION ===== */
+  @media (max-width: 768px) {
+    .course-card {
+      width: 100%;
+    }
+ 
+    .btn {
+      padding: 0.8rem;
+      font-size: 1rem;
+    }
+  
+  body {
+    font-size: 1.3rem;          /* 16px */
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 2rem;       /* 28px */
+    line-height: 1.25;
+  }
+
+  h2 {
+    font-size: 1.8rem;        /* 24px */
+    line-height: 1.3;
+  }
+
+  .page1 {
+    font-size: 1.3rem;          /* 16px */
+    line-height: 1.5;
+  }
+
+  .course-card p {
+    font-size: 1.2rem;       /* 15.2px */
+    line-height: 1.5;
+  }
+
+  .course-card .more {
+    font-size: 1rem;       /* 13.6px */
+  }
+
+}
+
+
+
+
