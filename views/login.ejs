@@ -23,6 +23,7 @@
     }
 
     .login-box {
+      position: relative;
       background: white;
       border: 1px solid #ddd;
       border-radius: 0.375em;
@@ -42,7 +43,7 @@
       font-size: 1.5rem;
     }
 
-    .close-button {
+ .close-button {
   position: absolute;
   top: 1rem;
   left: 1rem;
@@ -50,7 +51,7 @@
   text-decoration: none;
   color: #999;
   transition: color 0.3s ease;
-  z-index: 1000;
+  z-index: 10; /* Можно меньше, 1000 не нужен */
 }
 
 .close-button:hover {
