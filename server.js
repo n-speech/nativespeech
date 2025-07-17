@@ -199,6 +199,24 @@ app.get('/', (req, res) => {
   return req.session.user ? res.redirect('/cabinet') : res.redirect('/login');
 });
 
+app.get('/protected-file/:course/:lesson/*', requireLogin, (req, res) => {
+  const { course, lesson } = req.params;
+  const relativePath = req.params[0]; // всё после /lesson/
+
+  const accessKey = `${course}/${lesson}`;
+  if (!req.session.user.access.includes(accessKey)) {
+    return res.status(403).send('⛔ Нет доступа к файлам этого урока');
+  }
+
+  const filePath = path.join(__dirname, 'courses', course, lesson, relativePath);
+
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('❌ Файл не найден');
+  }
+});
+
 app.listen(port, () => {
   console.log(`✅ Сервер запущен: http://localhost:${port}`);
 });
