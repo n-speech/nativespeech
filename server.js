@@ -9,6 +9,9 @@ const { Pool } = require('pg');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Статические файлы для курсов
+app.use('/courses', express.static(path.join(__dirname, 'courses')));
+
 // PostgreSQL pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
