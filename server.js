@@ -201,22 +201,25 @@ app.get('/', (req, res) => {
 
 app.get('/protected-file/:course/:lesson/*', requireLogin, (req, res) => {
   const { course, lesson } = req.params;
-  const relativePath = req.params[0]; // всё после /lesson/
-
-  const accessKey = `${course}/${lesson}`;
-  if (!req.session.user.access.includes(accessKey)) {
-    return res.status(403).send('⛔ Нет доступа к файлам этого урока');
-  }
-
-  const filePath = path.join(__dirname, 'courses', course, lesson, relativePath);
-
+  const fileRelativePath = req.params[0]; // остаток пути после /protected-file/:course/:lesson/
+  
+  // Формируем полный путь к файлу
+  const filePath = path.join(__dirname, 'courses', course, lesson, fileRelativePath);
+  
+  // Для безопасности (чтобы нельзя было выйти из папки)
+  // if (!filePath.startsWith(path.join(__dirname, 'courses'))) {
+  //   return res.status(400).send('Неверный путь к файлу');
+  // }
+  
+  console.log('Запрошен файл:', filePath);
+  
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
   } else {
+    console.log('Файл не найден:', filePath);
     res.status(404).send('❌ Файл не найден');
   }
 });
-
 app.listen(port, () => {
   console.log(`✅ Сервер запущен: http://localhost:${port}`);
 });
