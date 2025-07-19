@@ -5,7 +5,9 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const { Pool } = require('pg');
-
+const multer = require('multer');
+const nodemailer = require('nodemailer');
+const upload = multer({ dest: 'uploads/' });
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -40,6 +42,9 @@ function requireLogin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   next();
 }
+
+const upload = multer({ dest: 'uploads/' });
+
 
 // 👉 Добавлено:
 app.get('/', (req, res) => {
@@ -229,6 +234,64 @@ app.get('/protected-file/:course/:lesson/*', requireLogin, (req, res) => {
     res.status(404).send('❌ Файл не найден');
   }
 });
+
+app.post('/send', upload.single('file'), async (req, res) => {
+  const { name } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send('Файл не загружен.');
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // или другой SMTP-сервис
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.SMTP_USER,
+    to: process.env.TARGET_EMAIL,
+    subject: `Новое домашнее задание от ${name}`,
+    text: `Имя ученика: ${name}`,
+    attachments: [
+      {
+        filename: file.originalname,
+        path: file.path,
+      },
+    ],
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+
+    // Удаляем файл после отправки
+    fs.unlink(file.path, (err) => {
+      if (err) {
+        console.error('Ошибка при удалении файла:', err);
+      } else {
+        console.log('Файл успешно удалён:', file.path);
+      }
+    });
+
+    res.send(`
+      <html>
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family:sans-serif;padding:20px;">
+          <h2>Спасибо!</h2>
+          <p>Домашнее задание отправлено.</p>
+          <a href="/" style="display:inline-block;margin-top:20px;">Вернуться назад</a>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('Ошибка отправки письма:', error);
+    res.status(500).send(`Ошибка при отправке: ${error.message}`);
+  }
+});
+
 app.listen(port, () => {
   console.log(`✅ Сервер запущен: http://localhost:${port}`);
 });
