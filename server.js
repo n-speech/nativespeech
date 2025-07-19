@@ -43,9 +43,6 @@ function requireLogin(req, res, next) {
   next();
 }
 
-const upload = multer({ dest: 'uploads/' });
-
-
 // 👉 Добавлено:
 app.get('/', (req, res) => {
   if (req.session.user) {
