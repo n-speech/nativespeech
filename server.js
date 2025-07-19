@@ -276,15 +276,70 @@ app.post('/send', upload.single('file'), async (req, res) => {
     });
 
     res.send(`
-      <html>
-        <head><meta charset="UTF-8"></head>
-        <body style="font-family:sans-serif;padding:20px;">
-          <h2>Спасибо!</h2>
-          <p>Домашнее задание отправлено.</p>
-          <a href="/" style="display:inline-block;margin-top:20px;">Вернуться назад</a>
-        </body>
-      </html>
-    `);
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body {
+          font-family: system-ui, sans-serif;
+          padding: 30px 20px;
+          background-color: #f9f9f9;
+          color: #333;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        h2 {
+          font-size: 2rem;
+          color: #155724;
+        }
+        p {
+          font-size: 1.2rem;
+          background-color: #d4edda;
+          border: 1px solid #c3e6cb;
+          padding: 15px 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+        a {
+          margin-top: 20px;
+          display: inline-block;
+          font-size: 1rem;
+          color: white;
+          background-color: #28a745;
+          padding: 10px 18px;
+          border-radius: 6px;
+          text-decoration: none;
+          transition: background-color 0.3s ease;
+        }
+        a:hover {
+          background-color: #218838;
+        }
+        @media (max-width: 600px) {
+          h2 {
+            font-size: 1.6rem;
+          }
+          p {
+            font-size: 1rem;
+            padding: 12px 16px;
+          }
+          a {
+            font-size: 0.95rem;
+            padding: 8px 16px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <h2>Спасибо!</h2>
+      <p>Домашнее задание отправлено.</p>
+      <a href="/">Вернуться назад</a>
+    </body>
+  </html>
+`);
+
   } catch (error) {
     console.error('Ошибка отправки письма:', error);
     res.status(500).send(`Ошибка при отправке: ${error.message}`);
