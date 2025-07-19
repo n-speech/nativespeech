@@ -590,7 +590,7 @@ audio {
   
 <section class="homework-form">
   <h2>📩 Отправить домашнюю работу</h2>
-  <form action="/send" method="POST" enctype="multipart/form-data">
+  <form action="/send" method="POST" enctype="multipart/form-data" onsubmit="showWait()">
     <input type="text" id="name" name="name" placeholder="Введите ваше имя" required>
     <input type="file" id="file" name="file" required>
     <button type="submit">Отправить</button>
