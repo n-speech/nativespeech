@@ -244,11 +244,13 @@ app.post('/send', upload.single('file'), async (req, res) => {
   }
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail', // или другой SMTP-сервис
+    host: 'smtp.privateemail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
+      pass: process.env.SMTP_PASS
+    }
   });
 
   const mailOptions = {
