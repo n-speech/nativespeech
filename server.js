@@ -169,7 +169,7 @@ try {
   console.error('❌ Ошибка в POST /admin:', error.stack);
   res.render('admin', { message: 'Произошла ошибка при сохранении.' });
 }
-
+});
 
 // 🔐 Авторизация
 app.get('/login', (req, res) => {
