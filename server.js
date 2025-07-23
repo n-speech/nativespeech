@@ -125,11 +125,17 @@ try {
       // Если нет lesson_id вообще — не трогаем user_lessons
     } else {
       // Собираем только то, что надо обновить
-      if (grade) {
-        updates.push(`grade = EXCLUDED.grade`);
-        values.push(grade);
-        i++;
-      }
+      
+     if (grade !== undefined) {
+  if (grade === '') {
+    updates.push(`grade = NULL`);
+  } else {
+    updates.push(`grade = EXCLUDED.grade`);
+    values.push(grade);
+    i++;
+  }
+}
+
 
       if (access !== undefined && access !== '') {
         const accessNum = access === '1' ? 1 : 0;
