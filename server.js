@@ -90,11 +90,12 @@ const { name, user_email, lesson_id, grade, access, course_id, password } = req.
     const accessNum = access === '1' ? 1 : 0;
 
     await pool.query(
-      INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT(user_email, lesson_id)
-      DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access
-    , [user_email, accessKey, grade, accessNum]);
+  `INSERT INTO user_lessons (user_email, lesson_id, grade, access)
+   VALUES ($1, $2, $3, $4)
+   ON CONFLICT(user_email, lesson_id)
+   DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access`,
+  [user_email, accessKey, grade, accessNum]
+);
 
     res.render('admin', { message: '✅ Данные успешно сохранены!' });
   } catch (error) {
