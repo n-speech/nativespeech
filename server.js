@@ -86,7 +86,7 @@ const { name, user_email, lesson_id, grade, access, course_id, password } = req.
       await pool.query('UPDATE users SET course_id = $1 WHERE email = $2', [course_id, user_email]);
     }
 
-    const accessKey = ${course_id}/${lessonId}; // 💡 Новый формат доступа
+    const accessKey = `${course_id}/${lessonId}`;  // 💡 Новый формат доступа
     const accessNum = access === '1' ? 1 : 0;
 
     await pool.query(
