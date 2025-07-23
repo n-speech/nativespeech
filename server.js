@@ -127,11 +127,14 @@ try {
       // Собираем только то, что надо обновить
       
      if (grade !== undefined) {
-  if (grade === '') {
+     const gradeTrimmed = grade.trim().toLowerCase();
+     if (gradeTrimmed === 'delete') {    
     updates.push(`grade = NULL`);
-  } else {
+  } else if (gradeTrimmed !== '') {
+    insertFields.push('grade');
+    insertValues.push(`$${i}`);
+    allValues.push(grade);
     updates.push(`grade = EXCLUDED.grade`);
-    values.push(grade);
     i++;
   }
 }
