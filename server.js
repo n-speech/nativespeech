@@ -65,43 +65,111 @@ app.post('/admin', requireLogin, async (req, res) => {
     return res.status(403).send('⛔ Доступ запрещён');
   }
 
-  const { name, user_email, lesson_id, grade, access, course_id, password } = req.body;
+ const { name, user_email, password, course_id, lesson_id, grade, access } = req.body;
 
-  try {
-    const lessonId = lesson_id.toString();
+try {
+  if (!user_email) {
+    return res.render('admin', { message: '❗ Укажите email ученика' });
+  }
 
-    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [user_email]);
-    const existingUser = userResult.rows[0];
+  // Проверка — существует ли пользователь
+  const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [user_email]);
+  const existingUser = userResult.rows[0];
 
-    if (!existingUser) {
-      if (!password) {
-        return res.render('admin', { message: '❗ Укажите пароль для нового пользователя' });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await pool.query(
-        'INSERT INTO users (name, email, password, course_id) VALUES ($1, $2, $3, $4)',
-        [name, user_email, hashedPassword, course_id || null]
-      );
-    } else if (course_id) {
-      await pool.query('UPDATE users SET course_id = $1 WHERE email = $2', [course_id, user_email]);
+  if (!existingUser) {
+    // Новый пользователь — нужен пароль
+    if (!password) {
+      return res.render('admin', { message: '❗ Укажите пароль для нового пользователя' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query(
+      'INSERT INTO users (name, email, password, course_id) VALUES ($1, $2, $3, $4)',
+      [name || null, user_email, hashedPassword, course_id || null]
+    );
+  } else {
+    // Обновление таблицы users — только name и course_id
+    const updates = [];
+    const values = [];
+    let i = 1;
+
+    if (name) {
+      updates.push(`name = $${i++}`);
+      values.push(name);
     }
 
-    const accessKey = `${course_id}/${lessonId}`; // 💡 Новый формат доступа
-    const accessNum = access === '1' ? 1 : 0;
+    if (course_id) {
+      updates.push(`course_id = $${i++}`);
+      values.push(course_id);
+    }
 
-    await pool.query(`
-      INSERT INTO user_lessons (user_email, lesson_id, grade, access)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT(user_email, lesson_id)
-      DO UPDATE SET grade = EXCLUDED.grade, access = EXCLUDED.access
-    `, [user_email, accessKey, grade, accessNum]);
-
-    res.render('admin', { message: '✅ Данные успешно сохранены!' });
-  } catch (error) {
-    console.error('❌ Ошибка в POST /admin:', error.stack);
-    res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+    if (updates.length > 0) {
+      values.push(user_email);
+      await pool.query(
+        `UPDATE users SET ${updates.join(', ')} WHERE email = $${i}`,
+        values
+      );
+    }
   }
-});
+
+  // Если есть что-то для user_lessons — проверим поля
+  if (lesson_id || grade || access) {
+    // lesson_id обязательно для user_lessons, но если его нет — можно вставить с "null"
+    const updates = [];
+    const values = [];
+    let i = 3;
+
+    const lessonKey = course_id && lesson_id ? `${course_id}/${lesson_id}` :
+                      lesson_id ? lesson_id : null;
+
+    if (!lessonKey) {
+      // Если нет lesson_id вообще — не трогаем user_lessons
+    } else {
+      // Собираем только то, что надо обновить
+      if (grade) {
+        updates.push(`grade = EXCLUDED.grade`);
+        values.push(grade);
+        i++;
+      }
+
+      if (access !== undefined && access !== '') {
+        const accessNum = access === '1' ? 1 : 0;
+        updates.push(`access = EXCLUDED.access`);
+        values.push(accessNum);
+        i++;
+      }
+
+      // Если есть хотя бы одно значение для обновления — делаем запрос
+      if (updates.length > 0) {
+        const insertFields = ['user_email', 'lesson_id'];
+        const insertValues = ['$1', '$2'];
+        const allValues = [user_email, lessonKey, ...values];
+
+        if (grade) {
+          insertFields.push('grade');
+          insertValues.push(`$3`);
+        }
+
+        if (access !== undefined && access !== '') {
+          insertFields.push('access');
+          insertValues.push(`$${grade ? 4 : 3}`);
+        }
+
+        await pool.query(`
+          INSERT INTO user_lessons (${insertFields.join(', ')})
+          VALUES (${insertValues.join(', ')})
+          ON CONFLICT(user_email, lesson_id)
+          DO UPDATE SET ${updates.join(', ')}
+        `, allValues);
+      }
+    }
+  }
+
+  res.render('admin', { message: '✅ Данные успешно обновлены!' });
+} catch (error) {
+  console.error('❌ Ошибка в POST /admin:', error.stack);
+  res.render('admin', { message: 'Произошла ошибка при сохранении.' });
+}
+
 
 // 🔐 Авторизация
 app.get('/login', (req, res) => {
